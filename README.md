@@ -1,0 +1,2 @@
+# node
+Full browser node
