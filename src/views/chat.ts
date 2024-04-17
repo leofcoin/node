@@ -57,6 +57,7 @@ export class ChatView extends LitElement {
           flex-direction: row;
           width: 100%;
           height: 100%;
+          border-top: 1px solid #383941;
         }
         .chat-container {
           height: 100%;
@@ -77,6 +78,7 @@ export class ChatView extends LitElement {
         .input-wrapper {
           padding: 12px 24px;
           box-sizing: border-box;
+          width: 100%;
         }
 
         .input-container {
@@ -89,26 +91,29 @@ export class ChatView extends LitElement {
         }
 
         .additions {
-          position: relative;
-          transform: translate(-110%);
+          bottom: 76px;
+          position: absolute;
+          transform: translateY(-110%);
         }
         .additions[open] {
-          transform: translate(0);
-        }
-
-        emoji-selector {
-          right: 12px;
-          bottom: 12px;
-          position: absolute;
-        }
-
-        emoji-selector[is-desktop] {
-          right: 24px;
-          bottom: 24px;
+          transform: translateY(0);
         }
 
         custom-button[type='tertiary'] custom-icon {
           --custom-icon-color: var(--md-sys-color-on-tertiary);
+        }
+
+        .friends-list {
+          max-width: 240px;
+          box-sizing: border-box;
+          padding: 12px 24px;
+          border-right: 1px solid #383941;
+        }
+
+        flex-row {
+          width: -webkit-fill-available;
+          box-sizing: border-box;
+          padding: 0 24px;
         }
       `
     ]
@@ -152,7 +157,7 @@ export class ChatView extends LitElement {
     //   </flex-column>
     // `
     return html`
-      <flex-column>
+      <flex-column class="friends-list">
         <flex-it></flex-it>
         <custom-button type="tertiary" label="add friend"
           ><custom-icon slot="icon" icon="add"></custom-icon
@@ -167,9 +172,11 @@ export class ChatView extends LitElement {
           </array-repeat>
         </flex-column>
 
-        <flex-column class="additions">
+        <flex-row class="additions">
+          <flex-it></flex-it>
           <emoji-selector data-route="emoji" @emoji-selected=${this.#onEmojiSelected}></emoji-selector>
-        </flex-column>
+        </flex-row>
+
         <div class="input-wrapper">
           <flex-row width="100%" center class="input-container">
             <textarea class="textarea" placeholder="type here" mode-edit="true"></textarea>
