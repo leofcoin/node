@@ -6,6 +6,7 @@ import { formatBytes } from '@leofcoin/utils'
 import '../elements/navigation-bar.js'
 import { query } from 'lit/decorators.js'
 import { customElement } from '@vandeurenglenn/lite'
+import Router from '../router.js'
 
 @customElement('explorer-view')
 export class ExplorerView extends LitElement {
@@ -19,12 +20,14 @@ export class ExplorerView extends LitElement {
       :host {
         display: flex;
         flex-direction: column;
+        align-items: center;
         width: 100%;
         height: 100%;
         overflow-y: auto;
       }
-      .navigation-bar {
-        padding: 24px 0;
+      custom-pages {
+        width: 100%;
+        height: 100%;
       }
     `
   }
@@ -63,14 +66,27 @@ export class ExplorerView extends LitElement {
       this.selected === 'dashboard' ||
       this.selected === 'pool'
         ? html`
-            <flex-row class="navigation-bar">
-              <flex-it></flex-it>
-              <navigation-bar
-                items='["dashboard", "blocks", "transactions", "pool"]'
-                @selected="${this.#customSelect}"
-              ></navigation-bar>
-              <flex-it></flex-it>
-            </flex-row>
+            <custom-tabs
+              round
+              class="wallet-nav"
+              attr-for-selected="data-route"
+              default-selected="dashboard"
+              @selected=${(event: CustomEvent) => (location.hash = Router.bang(`explorer/${event.detail}`))}
+            >
+              <custom-tab title="dashboard" data-route="dashboard">
+                <custom-icon icon="dashboard"></custom-icon>
+              </custom-tab>
+              <custom-tab title="blocks" data-route="blocks">
+                <custom-icon icon="stack"></custom-icon>
+              </custom-tab>
+              <custom-tab title="transactions" data-route="transactions">
+                <custom-icon icon="list"></custom-icon>
+              </custom-tab>
+
+              <custom-tab title="pool" data-route="pool">
+                <custom-icon icon="pool"></custom-icon>
+              </custom-tab>
+            </custom-tabs>
           `
         : ''}
     `

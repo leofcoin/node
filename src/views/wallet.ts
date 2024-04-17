@@ -2,44 +2,43 @@ import '../elements/account.js'
 // import { nativeToken } from './../../../node_modules/@leofcoin/addresses/src/addresses'
 import { parseUnits } from '@leofcoin/utils'
 import { signTransaction } from '@leofcoin/lib'
-import { LitElement, PropertyValueMap, html } from 'lit'
-import { customElement, property } from 'lit/decorators.js'
-import { consume } from '@lit/context'
-import { walletContext, Address, Accounts, Wallet } from '../context/wallet.js'
-import { CustomPages } from '@vandeurenglenn/lit-elements/pages.js'
-import '@vandeurenglenn/lit-elements/tabs.js'
-import '@vandeurenglenn/lit-elements/tab.js'
+import { LiteElement, customElement, property, html, query } from '@vandeurenglenn/lite'
+import { CustomPages } from '@vandeurenglenn/lite-elements/pages.js'
+import '@vandeurenglenn/lite-elements/tabs.js'
+import '@vandeurenglenn/lite-elements/tab.js'
 import { WalletPay } from './wallet/wallet-pay.js'
 import Router from '../router.js'
+
 @customElement('wallet-view')
-export class WalletView extends LitElement {
+export class WalletView extends LiteElement {
   @property({ type: Array })
-  accessor accounts: Accounts
+  accessor accounts
 
   @property({ type: String })
-  accessor selectedAccount: Address
+  accessor selectedAccount
 
-  @property({ type: Object })
-  @consume({ context: walletContext, subscribe: true })
-  accessor wallet: Wallet
+  @property({ type: Object, consumer: true })
+  accessor wallet
+
+  @query('wallet-send') accessor walletSend
 
   get #amount() {
-    return this.renderRoot.querySelector('.amount') as HTMLInputElement
+    return this.walletSend.shadowRoot.querySelector('.amount') as HTMLInputElement
   }
 
   get #to() {
-    return this.renderRoot.querySelector('.to') as HTMLInputElement
+    return this.walletSend.shadowRoot.querySelector('.to') as HTMLInputElement
   }
 
   get pages(): CustomPages {
-    return this.renderRoot.querySelector('custom-pages') as unknown as CustomPages
+    return this.shadowRoot.querySelector('custom-pages') as unknown as CustomPages
   }
 
-  protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (_changedProperties.has('wallet')) {
-      this.selectedAccount = this.wallet.selectedAccount
+  onChange(propertyKey, value) {
+    if (propertyKey === 'wallet') {
+      this.selectedAccount = this.wallet.accounts[this.wallet.selectedAccountIndex][1]
       this.accounts = this.wallet.accounts
-      client.selectAccount(this.wallet.selectedAccount)
+      console.log(this.accounts)
     }
   }
 
@@ -91,13 +90,13 @@ export class WalletView extends LitElement {
   }
 
   connectedCallback(): void {
-    super.connectedCallback()
+    this.shadowRoot.addEventListener('click', this._handleClick.bind(this))
     if (Router.debang(location.hash).split('/').length === 1) location.hash = Router.bang(`wallet/send`)
   }
 
-  #handleClick = (event) => {
+  _handleClick(event) {
     const target = event.composedPath()[0]
-    const action = target.getAttribute('data-action')
+    const action = event.target.getAttribute('data-action') ?? target.getAttribute('data-action')
     action && this[`_${action}`]()
   }
 
@@ -126,7 +125,7 @@ export class WalletView extends LitElement {
           pointer-events: auto;
         }
       </style>
-      <flex-column class="main" @click=${this.#handleClick}>
+      <flex-column class="main">
         <custom-pages attr-for-selected="data-route">
           <wallet-send data-route="send"></wallet-send>
           <wallet-receive data-route="receive"></wallet-receive>

@@ -63,8 +63,9 @@ export default customElements.define('export-screen', class ExportScreen extends
       }
 
       .wrapper {
-        border: 1px solid var(--border-color);
-        background: var(--secondary-background);
+        border: 1px solid var(--border-color);        
+        background: var(--md-sys-color-surface-container);
+        color: var(--md-sys-color-on-surface-container);
         border-radius: 12px;
         box-sizing: border-box;
         padding: 12px 24px;

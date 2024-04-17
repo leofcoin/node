@@ -62,20 +62,22 @@ export class ValidatorView extends LitElement {
 
   render() {
     return html`
-      <flex-row>
-        <span>total validators</span>
+      <hero-element>
+        <flex-row>
+          <span>total validators</span>
 
-        <flex-one></flex-one>
-        <strong>${this.validators ? Object.keys(this.validators).length : '0'}</strong>
-      </flex-row>
+          <flex-one></flex-one>
+          <strong>${this.validators ? Object.keys(this.validators).length : '0'}</strong>
+        </flex-row>
 
-      <flex-row>
-        <span>online validators</span>
-        <flex-one></flex-one>
-        <strong>${this.onlineValidators ? this.onlineValidators.length : '0'}</strong>
-      </flex-row>
+        <flex-row>
+          <span>online validators</span>
+          <flex-one></flex-one>
+          <strong>${this.onlineValidators ? this.onlineValidators.length : '0'}</strong>
+        </flex-row>
 
-      <button @click=${this.#click}>participate</button>
+        <button @click=${this.#click}>participate</button>
+      </hero-element>
     `
   }
 }

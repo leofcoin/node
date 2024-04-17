@@ -1,6 +1,6 @@
 import { CSSResultGroup, LitElement, css, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import '@vandeurenglenn/lit-elements/typography.js'
+import '@vandeurenglenn/lite-elements/typography.js'
 @customElement('hero-element')
 export class HeroElement extends LitElement {
   @property()
@@ -11,7 +11,8 @@ export class HeroElement extends LitElement {
   static styles?: CSSResultGroup = [
     css`
       :host {
-        background: var(--active-background);
+        background: var(--md-sys-color-surface-container-high);
+        color: var(--md-sys-color-on-surface-container-high);
         border-radius: 24px;
         box-sizing: border-box;
         padding: 12px 24px;
@@ -19,8 +20,7 @@ export class HeroElement extends LitElement {
         max-height: 270px;
         max-width: 320px;
         width: 100%;
-        color: var(--font-color);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--md-sys-color-outline);
         display: flex;
         flex-direction: column;
         align-items: center;

@@ -6,7 +6,7 @@ import '@material/web/button/outlined-button.js'
 import '@material/web/button/filled-tonal-button.js'
 import './../../elements/hero.js'
 import { write, NFC_SUPPORT } from './../../integrations/nfc.js'
-import { CustomPages } from '@vandeurenglenn/lit-elements/pages.js'
+import { CustomPages } from '@vandeurenglenn/lite-elements/pages.js'
 @customElement('wallet-receive')
 export class WalletReceive extends LitElement {
   @property()
@@ -79,10 +79,10 @@ export class WalletReceive extends LitElement {
       select,
       input,
       button {
-        background: transparent;
+        background: var(--md-sys-color-surface-container-highest);
         border: 1px solid var(--border-color);
         font-size: 14px;
-        color: var(--font-color);
+        color: var(--md-sys-color-on-surface-container-highest);
         border-radius: 24px;
         padding: 6px 12px;
       }

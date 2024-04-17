@@ -40,10 +40,9 @@ export default class Router {
     if (!globalThis.URLPattern) {
       await import('urlpattern-polyfill')
     }
-    const urlPattern = new URLPattern(Router.debang(hash), location.host)
+    const urlPattern = new URLPattern(Router.debang(hash), location.origin)
 
-    const routes = urlPattern.pathname.split('/')
-    console.log(routes)
+    const routes = urlPattern.pathname.split('/').slice(1)
 
     const route = routes.splice(0, 1)[0]
     const subroutes = routes

@@ -90,13 +90,16 @@ export default customElements.define('explorer-block-transactions', class Explor
     }
   }
 </style>
-  <flex-column class="container">
-    <flex-column class="latest-transactions">
-      ${map(this.transactions, item => html`
-        <latest-element value=${JSON.stringify(item)} type="transaction"></latest-element>
-      `)}
-    </flex-column>
+
+<hero-element>
+  <flex-column class="latest-transactions">
+    ${map(this.transactions, item => html`
+      <latest-element value=${JSON.stringify(item)} type="transaction"></latest-element>
+    `)}
   </flex-column>
+</hero-element>
+    
+  
 `
   }
 })

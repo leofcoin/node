@@ -73,7 +73,7 @@ export class StatsView extends LitElement {
 
   render() {
     return html`
-      <flex-column class="container">
+      <hero-element>
         <flex-row class="id">
           <strong>id</strong>
           <flex-it></flex-it>
@@ -98,7 +98,7 @@ export class StatsView extends LitElement {
         <flex-column class="peers-container">
           ${this.peers ? map(this.peers, ([id, peer]) => html` <shorten-string .value=${id}></shorten-string> `) : ''}
         </flex-column>
-      </flex-column>
+      </hero-element>
     `
   }
 }

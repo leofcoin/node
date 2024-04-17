@@ -1,21 +1,20 @@
 // import { nativeToken } from './../../../node_modules/@leofcoin/addresses/src/addresses'
 import { parseUnits } from '@leofcoin/utils'
-import { LitElement, PropertyValueMap, html } from 'lit'
+import { LiteElement, html, customElement, property } from '@vandeurenglenn/lite'
 import '../elements/button.js'
 import '../elements/navigation-bar.js'
-import { Accounts, Wallet, walletContext } from '../context/wallet.js'
-import { customElement, property } from 'lit/decorators.js'
-import { consume } from '@lit/context'
-import type { CustomPages } from '@vandeurenglenn/lit-elements/pages.js'
+import './../elements/hero.js'
+import type { CustomPages } from '@vandeurenglenn/lite-elements/pages.js'
+import '@vandeurenglenn/lite-elements/icon.js'
+import Router from '../router.js'
 
 @customElement('identity-view')
-export class IdentityView extends LitElement {
-  @property({ type: Object })
-  @consume({ context: walletContext, subscribe: true })
-  accessor wallet: Wallet
+export class IdentityView extends LiteElement {
+  @property({ type: Object, consumer: true })
+  accessor wallet
 
   @property({ type: Array })
-  accessor accounts: Accounts
+  accessor accounts
 
   get pages(): CustomPages {
     return this.shadowRoot.querySelector('custom-pages')
@@ -32,14 +31,13 @@ export class IdentityView extends LitElement {
     this.navigation.select(selected)
   }
 
-  protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (_changedProperties.has('wallet')) {
+  async onChange(propertyKey) {
+    if (propertyKey === 'wallet') {
       this.accounts = this.wallet.accounts
-      this.requestUpdate()
     }
   }
 
-  #customSelect({ detail }) {
+  _customSelect({ detail }) {
     location.hash = `#!/identity/${detail}`
   }
 
@@ -52,12 +50,11 @@ export class IdentityView extends LitElement {
 
         :host {
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           width: 100%;
           height: 100%;
-          padding: 24px;
-          align-items: center;
           justify-content: center;
+          padding: 24px;
           box-sizing: border-box;
           color: var(--font-color);
         }
@@ -103,26 +100,40 @@ export class IdentityView extends LitElement {
           height: 100%;
           display: flex;
         }
-
-        custom-svg-icon {
-          --svg-icon-size: 160px;
+        custom-tab {
+          pointer-events: auto;
+        }
+        .main {
+          width: 100%;
+          align-items: center;
         }
       </style>
-      <custom-svg-icon icon="account-circle"></custom-svg-icon>
-      <h2>Identity</h2>
 
-      <navigation-bar
-        items='["dashboard", "accounts", "actions"]'
-        @selected="${this.#customSelect}"
-        default-selected="dashboard"
-      ></navigation-bar>
-
-      <custom-pages attr-for-selected="data-route" selected="dashboard">
-        <identity-dashboard data-route="dashboard" .accounts=${this.accounts}></identity-dashboard>
-        <identity-accounts data-route="accounts" .accounts=${this.accounts}></identity-accounts>
-        <identity-account data-route="account" .accounts=${this.accounts}></identity-account>
-        <identity-actions data-route="actions" .accounts=${this.accounts}></identity-actions>
-      </custom-pages>
+      <flex-column class="main">
+        <custom-pages attr-for-selected="data-route" selected="dashboard">
+          <identity-dashboard data-route="dashboard" .accounts=${this.accounts}></identity-dashboard>
+          <identity-accounts data-route="accounts" .accounts=${this.accounts}></identity-accounts>
+          <identity-account data-route="account" .accounts=${this.accounts}></identity-account>
+          <identity-actions data-route="actions" .accounts=${this.accounts}></identity-actions>
+        </custom-pages>
+        <custom-tabs
+          round
+          class="wallet-nav"
+          attr-for-selected="data-route"
+          default-selected="dashboard"
+          @selected=${(event: CustomEvent) => (location.hash = Router.bang(`identity/${event.detail}`))}
+        >
+          <custom-tab title="dashboard" data-route="dashboard">
+            <custom-icon icon="dashboard"></custom-icon>
+          </custom-tab>
+          <custom-tab title="accounts" data-route="accounts">
+            <custom-icon icon="accounts"></custom-icon>
+          </custom-tab>
+          <custom-tab title="actions" data-route="actions">
+            <custom-icon icon="actions"></custom-icon>
+          </custom-tab>
+        </custom-tabs>
+      </flex-column>
     `
   }
 }

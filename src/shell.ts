@@ -1,7 +1,7 @@
 import Pubsub from '@vandeurenglenn/little-pubsub'
 import Storage from '@leofcoin/storage'
-import '@vandeurenglenn/lit-elements/pages.js'
-import '@vandeurenglenn/lit-elements/selector.js'
+import '@vandeurenglenn/lite-elements/pages.js'
+import '@vandeurenglenn/lite-elements/selector.js'
 import './array-repeat.js'
 import './screens/login.js'
 import './screens/export.js'
@@ -10,32 +10,20 @@ import './screens/login.js'
 import './notification/master.js'
 import './notification/child.js'
 import './elements/account-select.js'
-import defaultTheme from './themes/default.js'
-import { walletContext, Wallet } from './context/wallet.js'
-import { Block, blockContext } from './context/block.js'
-import { ContextProvider } from '@lit/context'
-import '@vandeurenglenn/lit-elements/icon-set.js'
-import '@vandeurenglenn/lit-elements/icon.js'
-import '@vandeurenglenn/lit-elements/dropdown-menu.js'
+import '@vandeurenglenn/lite-elements/icon-set.js'
+import '@vandeurenglenn/lite-elements/icon.js'
+import '@vandeurenglenn/lite-elements/dropdown-menu.js'
 import '@vandeurenglenn/flex-elements/column.js'
 import '@vandeurenglenn/flex-elements/row.js'
 import '@vandeurenglenn/flex-elements/it.js'
-import '@vandeurenglenn/lit-elements/theme.js'
+import '@vandeurenglenn/lite-elements/theme.js'
 import './elements/sync-info.js'
 import Router from './router.js'
-import type { CustomPages } from '@vandeurenglenn/lit-elements/pages.js'
+import type { CustomPages } from '@vandeurenglenn/lite-elements/pages.js'
 
 import { LiteElement, property, query, css, html, customElement } from '@vandeurenglenn/lite'
 
 globalThis.pubsub = globalThis.pubsub || new Pubsub(true)
-
-const setTheme = (theme) => {
-  for (const key of Object.keys(theme)) {
-    document.querySelector('body').style.setProperty(`--${key}`, theme[key])
-  }
-}
-
-setTheme(defaultTheme)
 
 @customElement('app-shell')
 class AppShell extends LiteElement {
@@ -54,22 +42,13 @@ class AppShell extends LiteElement {
   @property({ type: Boolean, reflect: true })
   accessor navRailShown = false
 
-  #blockContextProvider = new ContextProvider(this, { context: blockContext })
-  #walletContextProvider = new ContextProvider(this, {
-    context: walletContext
-  })
-
   router: Router
 
-  set block(value: Block) {
-    this.#blockContextProvider.setValue(value)
-    this.#blockContextProvider.updateObservers()
-  }
+  @property({ provider: true })
+  accessor block
 
-  set wallet(value: Wallet) {
-    this.#walletContextProvider.setValue(value)
-    this.#walletContextProvider.updateObservers()
-  }
+  @property({ provider: true })
+  accessor wallet
 
   get nodeReady() {
     return this.#nodeReady
@@ -177,9 +156,7 @@ class AppShell extends LiteElement {
         flex-direction: column;
         font-family: system-ui, 'Noto Sans', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
           'Segoe UI Symbol';
-
-        background: linear-gradient(45deg, #6495ed78, transparent);
-        background: var(--main-background);
+        background: var(--md-sys-background);
         font-size: 0.875rem;
         font-weight: 400;
         line-height: 1.5;
@@ -200,12 +177,10 @@ class AppShell extends LiteElement {
         height: 100%;
         display: flex;
         flex-direction: column;
-        background-color: var(--secondary-background);
       }
 
       .custom-selector-overlay {
         height: 100%;
-        background: #333750;
         --svg-icon-color: #ffffffb5;
         border-right: 1px solid #383941;
         position: absolute;
@@ -278,11 +253,17 @@ class AppShell extends LiteElement {
     return html`
       <custom-icon-set>
         <template>
+          <span name="add">@symbol-add</span>
           <span name="close">@symbol-close</span>
           <span name="notifications">@symbol-notifications</span>
           <span name="sync">@symbol-sync</span>
           <span name="clear-all">@symbol-clear_all</span>
           <span name="wallet">@symbol-wallet</span>
+          <span name="dashboard">@symbol-dashboard</span>
+          <span name="accounts">@symbol-account_tree</span>
+          <span name="actions">@symbol-manage_accounts</span>
+          <span name="stack">@symbol-stack</span>
+          <span name="pool">@symbol-pool</span>
           <span name="send">@symbol-send</span>
           <span name="account_circle">@symbol-account_circle</span>
           <span name="travel_explore">@symbol-travel_explore</span>

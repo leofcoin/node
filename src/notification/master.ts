@@ -2,8 +2,8 @@ import { css, html, LitElement } from 'lit'
 import './child.js'
 import { customElement, property } from 'lit/decorators.js'
 import { NotificationChild } from './child.js'
-import '@vandeurenglenn/lit-elements/icon.js'
-import '@vandeurenglenn/lit-elements/pane.js'
+import '@vandeurenglenn/lite-elements/icon.js'
+import '@vandeurenglenn/lite-elements/pane.js'
 import '@vandeurenglenn/flex-elements/row.js'
 
 @customElement('notification-master')

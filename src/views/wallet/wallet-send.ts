@@ -43,10 +43,10 @@ export class WalletSend extends LitElement {
       input,
       button {
         pointer-events: auto;
-        background: transparent;
+        background: var(--md-sys-color-surface-container-highest);
         border: 1px solid var(--border-color);
         font-size: 14px;
-        color: var(--font-color);
+        color: var(--md-sys-color-on-surface-container-highest);
         border-radius: 24px;
         padding: 6px 12px;
       }
@@ -54,12 +54,16 @@ export class WalletSend extends LitElement {
       button {
         cursor: pointer;
       }
+
+      label {
+        width: 100%;
+      }
     `
   ]
 
   protected render() {
     return html`
-      <flex-column class="container">
+      <hero-element>
         <flex-row>
           <label for=".amount">send</label>
           <flex-it></flex-it>
@@ -72,11 +76,11 @@ export class WalletSend extends LitElement {
         <input class="to" placeholder="address" value=${this.to} />
         <flex-it></flex-it>
         <flex-row>
-          <button data-action="cancel">cancel</button>
+          <custom-button data-action="cancel" label="cancel">cancel</custom-button>
           <flex-it></flex-it>
-          <button data-action="RequestSend">send</button>
+          <custom-button data-action="requestSend" label="send" type="tonal"></custom-button>
         </flex-row>
-      </flex-column>
+      </hero-element>
     `
   }
 }

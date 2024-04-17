@@ -1,27 +1,22 @@
-import { css, html, LitElement } from 'lit'
-import { map } from 'lit/directives/map.js'
+import { css, html, LiteElement, customElement, property } from '@vandeurenglenn/lite'
+import type { StyleList } from '@vandeurenglenn/lite/element'
 import '../../elements/latest.js'
 import '../../elements/explorer/info-container.js'
 import { formatBytes, formatUnits } from '@leofcoin/utils'
 import '../../elements/time/ago.js'
-import { TransactionMessage } from '@leofcoin/messages'
 import '../../animations/busy.js'
 import '../../elements/shorten-string.js'
 import '../../elements/explorer/property-info.js'
-import { customElement, property, state } from 'lit/decorators.js'
-import { consume } from '@lit/context'
-import { Block, blockContext } from '../../context/block.js'
 
 @customElement('explorer-block')
-export class ExplorerBlock extends LitElement {
-  @property({ type: Object })
-  @consume({ context: blockContext, subscribe: true })
-  accessor block: Block
+export class ExplorerBlock extends LiteElement {
+  @property({ type: Object, consumer: true })
+  accessor block
 
-  @state()
+  @property()
   accessor size: number
 
-  @state()
+  @property()
   accessor transactionHashes: []
 
   #goBack() {
@@ -120,8 +115,7 @@ export class ExplorerBlock extends LitElement {
         </property-info>
 
         <flex-column style="padding-left: 24px; box-sizing: border-box;">
-          ${map(
-            this.block.validators,
+          ${this.block.validators.map(
             (validator) =>
               html`<a href="#!/explorer/address=${validator.address}"
                 ><shorten-string value=${validator.address}></shorten-string
@@ -132,7 +126,8 @@ export class ExplorerBlock extends LitElement {
     `
   }
 
-  static styles = css`
+  static styles: StyleList = [
+    css`
   :host {
     display: flex;
     flex-direction: column;
@@ -221,4 +216,5 @@ export class ExplorerBlock extends LitElement {
       box-sizing: border-box;
     }
   `
+  ]
 }

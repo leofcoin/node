@@ -11,10 +11,6 @@ export default customElements.define('identity-account', class IdentityAccount e
     }
   }
 
-  constructor() {
-    super()
-  }
-
   render() {
     return html`
 <style>
@@ -37,20 +33,17 @@ export default customElements.define('identity-account', class IdentityAccount e
     box-sizing: border-box;
   }
 
-  .container {
-    max-width: 480px;
-    max-height: 480px;
-    width: 100%;
-    height: 100%;
-    padding: 12px;
-    box-sizing: border-box;
-    background: #ffffff52;
-    border-radius: 24px;
-    box-shadow: 1px 1px 14px 0px #0000002e;
+  
+  hero-element {
+    height: auto;
+    max-height: none;
+    max-width: 720px;
   }
   
 </style>
-<flex-column class="container">
+<hero-element>
+
+
 ${map(this.accounts, ([name, external, internal]) => html`
     <strong>${name}</strong>
   <flex-column class="account-container">
@@ -68,7 +61,7 @@ ${map(this.accounts, ([name, external, internal]) => html`
     </flex-row>
   </flex-column>
 `)}
-</flex-column>
+</hero-element>
 `
   }
 })

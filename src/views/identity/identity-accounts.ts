@@ -37,16 +37,10 @@ export default customElements.define(
             box-sizing: border-box;
           }
 
-          .container {
-            max-width: 480px;
-            max-height: 480px;
-            width: 100%;
-            height: 100%;
-            padding: 12px;
-            box-sizing: border-box;
-            /* background: #ffffff52; */
-            border-radius: 24px;
-            /* box-shadow: 1px 1px 14px 0px #0000002e; */
+          hero-element {
+            height: auto;
+            max-height: none;
+            max-width: 720px;
           }
           flex-row {
             background: #2c314a00;
@@ -66,18 +60,20 @@ export default customElements.define(
             max-width: 320px;
           }
         </style>
-        <custom-selector>
-          ${map(
-            this.accounts,
-            ([name, external, internal]) => html`
-              <flex-row>
-                <strong>${name}</strong>
-                <flex-one></flex-one>
-                <custom-svg-icon icon="chevron-right"></custom-svg-icon>
-              </flex-row>
-            `
-          )}
-        </custom-selector>
+        <hero-element>
+          <custom-selector>
+            ${map(
+              this.accounts,
+              ([name, external, internal]) => html`
+                <flex-row>
+                  <strong>${name}</strong>
+                  <flex-one></flex-one>
+                  <custom-svg-icon icon="chevron-right"></custom-svg-icon>
+                </flex-row>
+              `
+            )}
+          </custom-selector>
+        </hero-element>
       `
     }
   }

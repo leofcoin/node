@@ -1,6 +1,6 @@
 import { css, html, LitElement } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import '@vandeurenglenn/lit-elements/icon.js'
+import '@vandeurenglenn/lite-elements/icon.js'
 
 @customElement('notification-child')
 export class NotificationChild extends LitElement {

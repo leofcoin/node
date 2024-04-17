@@ -20,6 +20,8 @@ export class IdentityDashboard extends LitElement {
         :host {
           display: flex;
           flex-direction: column;
+          align-items: center;
+          justify-content: center;
           width: 100%;
           height: 100%;
           padding: 24px;
@@ -40,20 +42,28 @@ export class IdentityDashboard extends LitElement {
           justify-content: center;
           margin-bottom: 12px;
         }
-      </style>
-      <flex-wrap-evenly>
-        <flex-row>
-          <strong>transactions</strong>
-          <flex-it></flex-it>
-          <span>${this.accounts?.totalTransactions || 0}</span>
-        </flex-row>
 
-        <flex-row>
-          <strong>total amount</strong>
-          <flex-it></flex-it>
-          <span>${this.accounts?.totalValue || 0}</span>
-        </flex-row>
-      </flex-wrap-evenly>
+        hero-element {
+          height: auto;
+          max-height: none;
+          max-width: 720px;
+        }
+      </style>
+      <hero-element>
+        <flex-wrap-evenly>
+          <flex-row>
+            <strong>transactions</strong>
+            <flex-it></flex-it>
+            <span>${this.accounts?.totalTransactions || 0}</span>
+          </flex-row>
+
+          <flex-row>
+            <strong>total amount</strong>
+            <flex-it></flex-it>
+            <span>${this.accounts?.totalValue || 0}</span>
+          </flex-row>
+        </flex-wrap-evenly>
+      </hero-element>
     `
   }
 }

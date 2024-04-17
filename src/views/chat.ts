@@ -2,7 +2,7 @@ import { LitElement, PropertyValueMap, css, html } from 'lit'
 import { customElement, property, query } from 'lit/decorators.js'
 import '../elements/shorten-string.js'
 // import { map } from 'lit/directives/map.js'
-import '@vandeurenglenn/lit-elements/icon-button.js'
+import '@vandeurenglenn/lite-elements/icon-button.js'
 @customElement('chat-view')
 export class ChatView extends LitElement {
   @property({ type: Array })
@@ -54,10 +54,9 @@ export class ChatView extends LitElement {
       css`
         :host {
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           width: 100%;
           height: 100%;
-          color: var(--font-color);
         }
         .chat-container {
           height: 100%;
@@ -107,6 +106,10 @@ export class ChatView extends LitElement {
           right: 24px;
           bottom: 24px;
         }
+
+        custom-button[type='tertiary'] custom-icon {
+          --custom-icon-color: var(--md-sys-color-on-tertiary);
+        }
       `
     ]
   }
@@ -149,25 +152,33 @@ export class ChatView extends LitElement {
     //   </flex-column>
     // `
     return html`
-      <flex-column class="chat-container">
-        <array-repeat>
-          <template>
-            <chat-message></chat-message>
-          </template>
-        </array-repeat>
+      <flex-column>
+        <flex-it></flex-it>
+        <custom-button type="tertiary" label="add friend"
+          ><custom-icon slot="icon" icon="add"></custom-icon
+        ></custom-button>
       </flex-column>
+      <flex-column>
+        <flex-column class="chat-container">
+          <array-repeat>
+            <template>
+              <chat-message></chat-message>
+            </template>
+          </array-repeat>
+        </flex-column>
 
-      <flex-column class="additions">
-        <emoji-selector data-route="emoji" @emoji-selected=${this.#onEmojiSelected}></emoji-selector>
+        <flex-column class="additions">
+          <emoji-selector data-route="emoji" @emoji-selected=${this.#onEmojiSelected}></emoji-selector>
+        </flex-column>
+        <div class="input-wrapper">
+          <flex-row width="100%" center class="input-container">
+            <textarea class="textarea" placeholder="type here" mode-edit="true"></textarea>
+
+            <custom-icon icon="mood" @click=${() => this.onAdditionClick()} style="margin-right: 12px;"></custom-icon>
+            <custom-icon icon="send"> </custom-icon>
+          </flex-row>
+        </div>
       </flex-column>
-      <div class="input-wrapper">
-        <flex-row width="100%" center class="input-container">
-          <textarea class="textarea" placeholder="type here" mode-edit="true"></textarea>
-
-          <custom-icon icon="mood" @click=${() => this.onAdditionClick()} style="margin-right: 12px;"></custom-icon>
-          <custom-icon icon="send"> </custom-icon>
-        </flex-row>
-      </div>
     `
   }
 }

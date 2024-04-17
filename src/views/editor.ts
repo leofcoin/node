@@ -1,13 +1,13 @@
 import palenightItalic from '../vs-themes/palenight-italic.json' assert { type: 'json' }
 import Storage from '@leofcoin/storage'
 import { convertTheme } from '@vandeurenglenn/monaco-utils'
-import { LitElement, html } from 'lit'
+import { LiteElement, html } from '@vandeurenglenn/lite'
 // import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution'
 // import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution'
 
 export default customElements.define(
   'editor-view',
-  class editorView extends LitElement {
+  class editorView extends LiteElement {
     #editor
     #enterAmount = 0
     editorStore = new Storage('editor')
@@ -15,7 +15,6 @@ export default customElements.define(
     dependencies = ['@leofcoin:standards']
 
     async connectedCallback() {
-      super.connectedCallback()
       await this.editorStore.init()
       const importee = await import('@monaco-import')
       console.log(importee)

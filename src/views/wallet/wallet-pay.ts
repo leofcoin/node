@@ -1,16 +1,14 @@
-import { LitElement, html, css, CSSResultGroup } from 'lit'
-import { Wallet, walletContext } from '../../context/wallet.js'
-import { consume } from '@lit/context'
+import { LiteElement, html, css, property, customElement } from '@vandeurenglenn/lite'
 import { parseUnits } from '@leofcoin/utils'
 import { signTransaction } from '@leofcoin/lib'
-import { customElement, property } from 'lit/decorators.js'
 import './../../elements/hero.js'
-import '@vandeurenglenn/lit-elements/typography.js'
+import '@vandeurenglenn/lite-elements/typography.js'
+import { StyleList } from '@vandeurenglenn/lite/element'
 
 @customElement('wallet-pay')
-export class WalletPay extends LitElement {
-  @consume({ context: walletContext, subscribe: true })
-  accessor wallet: Wallet
+export class WalletPay extends LiteElement {
+  @property({ consumer: true })
+  accessor wallet
 
   @property()
   accessor amount: string
@@ -48,7 +46,7 @@ export class WalletPay extends LitElement {
   #close = () => {
     history.back()
   }
-  static styles?: CSSResultGroup = [
+  static styles?: StyleList = [
     css`
       :host {
         display: flex;
@@ -57,7 +55,6 @@ export class WalletPay extends LitElement {
         align-items: center;
         justify-content: center;
         pointer-events: none;
-        background: #1116;
       }
 
       input,

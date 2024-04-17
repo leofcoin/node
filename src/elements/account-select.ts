@@ -1,60 +1,47 @@
-import { css, html, LitElement } from 'lit'
+import { css, customElement, html, LiteElement, property } from '@vandeurenglenn/lite'
 import { map } from 'lit/directives/map.js'
 import './very-short-string.js'
 import './address-amount.js'
+import './../animations/busy.js'
 
-export default customElements.define(
-  'account-select',
-  class AccountSelect extends LitElement {
-    static properties = {
-      selected: {
-        type: String
-      },
-      accounts: {
-        type: Array
-      },
-      selecting: {
-        type: Boolean,
-        reflect: true
-      },
-      _icon: {
-        type: String
-      }
+@customElement('account-select')
+export class AccountSelect extends LiteElement {
+  @property({ type: Object, consumer: true }) accessor wallet
+  @property({type: String, provider: true}) accessor selectedAccount
+  @property({type: Boolean, reflect: true}) accessor selecting
+
+  onChange(propertyKey: string, value: any): void {
+    if (propertyKey === 'wallet' && value) {
+      this.selectedAccount = value.accounts[value.selectedAccountIndex]
     }
+  }
 
     get #iconElement() {
-      return this.renderRoot.querySelector('custom-svg-icon')
+      return this.shadowRoot.querySelector('custom-svg-icon')
     }
 
-    constructor() {
-      super()
-    }
+    // async connectedCallback() {
+    //   pubsub.subscribe('identity-change', this.#identityChange.bind(this))
+    // }
 
-    async connectedCallback() {
-      super.connectedCallback && super.connectedCallback()
-      // this.accounts = await identityController.accounts()
-
-      pubsub.subscribe('identity-change', this.#identityChange.bind(this))
-    }
-
-    /**
-     *
-     * @param {Array} accounts
-     * @param {Number} selectedAaccount
-     */
-    async #identityChange({ accounts, selectedAccountIndex }) {
-      this.accounts = accounts
-      this.selected = accounts[selectedAccountIndex]
-      this.title = this.selected[1]
-      // if (!this.selected)
-      console.log({ accounts, selectedAccountIndex })
-    }
+    // /**
+    //  *
+    //  * @param {Array} accounts
+    //  * @param {Number} selectedAaccount
+    //  */
+    // async #identityChange({ accounts, selectedAccountIndex }) {
+    //   this.accounts = accounts
+    //   this.selected = accounts[selectedAccountIndex]
+    //   this.title = this.selected[1]
+    //   // if (!this.selected)
+    //   console.log({ accounts, selectedAccountIndex })
+    // }
 
     async startSelect() {
       this.selecting = true
     }
 
-    static styles = css`
+    static styles = [css`
       :host {
         display: flex;
         flex-direction: column;
@@ -111,14 +98,19 @@ export default customElements.define(
       very-short-string {
         padding: 0 12px;
       }
-    `
+    `]
 
     render() {
       return html`
         <flex-row class="selected-container">
-          ${this.selected ? this.selected[0] : html`<busy-animation></busy-animation>`}
-          <flex-it></flex-it>
-          <address-amount address=${this.selected[1]}></address-amount>
+          ${this.selectedAccount ? html`
+            ${this.selectedAccount[0]}
+            <flex-it></flex-it>
+            <address-amount address=${this.selectedAccount[1]}></address-amount>  
+          ` : html`<busy-animation></busy-animation>`}
+          
+          
+          
           <custom-svg-icon
             icon="arrow-drop-down"
             @click="${() => (this.selecting = !this.selecting)}"
@@ -130,7 +122,7 @@ export default customElements.define(
               <span class="seperator"></span>
               <flex-column class="accounts-container">
                 ${map(
-                  this.accounts,
+                  this.wallet.accounts,
                   (item) => html`
                     <flex-column class="account-container">
                       <flex-row>
@@ -151,4 +143,4 @@ export default customElements.define(
       `
     }
   }
-)
+

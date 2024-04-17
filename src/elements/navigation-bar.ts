@@ -1,8 +1,9 @@
 import { css, html, LitElement } from 'lit'
 import { map } from 'lit/directives/map.js'
-import '@vandeurenglenn/lit-elements/tabs.js'
-import '@vandeurenglenn/lit-elements/tab.js'
+import '@vandeurenglenn/lite-elements/tabs.js'
+import '@vandeurenglenn/lite-elements/tab.js'
 import { customElement, property } from 'lit/decorators.js'
+
 @customElement('navigation-bar')
 export default class NavigationBar extends LitElement {
   @property({ type: Array, reflect: true })

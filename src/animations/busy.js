@@ -7,7 +7,7 @@ export default customElements.define('busy-animation', class BusyAnimation exten
     width: 40px;
     height: 40px;
     margin: 0 auto;
-    background-color: #333;
+    background-color: var(--md-sys-color-tertiary);
     border-radius: 100%;
     -webkit-animation: scale 1.0s infinite ease-in-out;
     animation: scale 1.0s infinite ease-in-out;
@@ -30,8 +30,4 @@ export default customElements.define('busy-animation', class BusyAnimation exten
     }
   }
   `
-  
-  constructor() {
-    super()
-  }
 })

@@ -1,69 +1,71 @@
-import { html, LitElement } from "lit";
+import { html, LitElement } from 'lit'
 
-export default customElements.define('clipboard-copy', class ClipboardCopy extends LitElement {
-  #value
-  static get properties() {
-    return {
-      value: { type: String }
-    };
-  }
+export default customElements.define(
+  'clipboard-copy',
+  class ClipboardCopy extends LitElement {
+    #value
+    static get properties() {
+      return {
+        value: { type: String }
+      }
+    }
 
-  set value(value) {
-    this.#value = value
-    this.innerHTML = value
-  }
+    set value(value) {
+      this.#value = value
+      this.innerHTML = value
+    }
 
-  get value() {
-    return this.#value
-  }
-  
-  constructor() {
-    super()
-    this.title = 'click to copy'
-  }
+    get value() {
+      return this.#value
+    }
 
-  copy() {
-    navigator.clipboard.writeText(this.value);
-    const innerHTML = this.innerHTML
-    this.innerHTML = 'copied!'
+    constructor() {
+      super()
+      this.title = 'click to copy'
+    }
 
-    setTimeout(() => this.innerHTML = innerHTML, 750)
-  }
+    copy() {
+      navigator.clipboard.writeText(this.value)
+      const innerHTML = this.innerHTML
+      this.innerHTML = 'copied!'
 
-  connectedCallback() {
-    super.connectedCallback()
-    this.addEventListener('click', this.copy.bind(this))
+      setTimeout(() => (this.innerHTML = innerHTML), 750)
+    }
 
-    // this.innerHTML = 'loading...'
-  }
+    connectedCallback() {
+      super.connectedCallback()
+      this.addEventListener('click', this.copy.bind(this))
 
-  render() {
-    return html`
-<style>
-  * {
-    pointer-events: none;
-  }
-  :host {
-    display: flex;
-    padding: 6px 12px;
-    box-sizing: border-box;
-    pointer-events: auto !important;
-    cursor: pointer;
-    font-size: 14px;
-    overflow: hidden;
-    max-width: 320px;
-  }
-  p {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 0;
-  }
-</style>
-<p>
-<slot>
-</slot>
-</p>
-    `
-  }
+      // this.innerHTML = 'loading...'
+    }
 
-})
+    render() {
+      return html`
+        <style>
+          * {
+            pointer-events: none;
+          }
+          :host {
+            display: flex;
+            padding: 6px 12px;
+            box-sizing: border-box;
+            pointer-events: auto !important;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            text-overflow: ellipsis;
+            text-wrap: nowrap;
+          }
+          p {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+          }
+        </style>
+        <p>
+          <slot> </slot>
+        </p>
+      `
+    }
+  }
+)

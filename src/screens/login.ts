@@ -11,6 +11,7 @@ import { customElement, property, state } from 'lit/decorators.js'
 import type Chain from '@leofcoin/chain/chain'
 import Router from '../router.js'
 import './../elements/hero.js'
+import '@vandeurenglenn/lite-elements/button.js'
 
 declare global {
   var client: Client
@@ -296,9 +297,9 @@ export class LoginScreen extends LitElement {
       <input type="password" placeholder="password" tabindex="0" autofocus autocomplete="new-password" />
       <flex-it></flex-it>
       <flex-row>
-        <button data-route-action="import">import</button>
+        <custom-button type="outlined" data-route-action="import" label="import"></custom-button>
         <flex-it></flex-it>
-        <button data-route-action="create">create</button>
+        <custom-button type="outlined" data-route-action="create" label="create"></custom-button>
       </flex-row>
     `
   }
@@ -307,7 +308,7 @@ export class LoginScreen extends LitElement {
     return html`
       <input type="password" placeholder="password" tabindex="0" autofocus autocomplete="current-password" />
       <flex-it></flex-it>
-      <button data-route-action="login" style="width: 100%; max-width: 190px; margin-bottom: 12px;">login</button>
+      <custom-button type="outlined" label="login" data-route-action="login" style="width: 100%; max-width: 190px; margin-bottom: 12px;"></custom-button>
     `
   }
 
@@ -386,7 +387,7 @@ export class LoginScreen extends LitElement {
             <flex-it flex="2"></flex-it>
             ${this.mnemonic}
 
-            <md-elevated-button @click=${this.#iUnderstand}>I Understand</md-elevated-button>
+            <custom-button type="outlined" label="I Understand" @click=${this.#iUnderstand}></custom-button>
           </flex-column>
 
           <flex-column data-route="import">
@@ -396,7 +397,7 @@ export class LoginScreen extends LitElement {
 
             <input type="password" placeholder="multiwif" tabindex="0" autofocus autocomplete="new-password" />
 
-            <md-elevated-button>import</md-elevated-button>
+            <custom-button type="outlined" label="import"></custom-button>
           </flex-column>
         </custom-pages>
       </hero-element>
