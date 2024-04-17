@@ -17,6 +17,8 @@ export class ChatView extends LitElement {
   @property({ type: Boolean })
   accessor showAdditions: boolean = false
 
+  @property({ type: Array }) accessor messages = []
+
   #peerChange = async (peer) => {
     this.peers = await client.peers()
   }
@@ -132,6 +134,15 @@ export class ChatView extends LitElement {
     this.textarea.value += detail
   }
 
+  send() {
+    this.messages.push({
+      sender: 'Iondependent',
+      text: this.textarea.value
+    })
+
+    this.requestUpdate()
+  }
+
   render() {
     // return html`
     //   <flex-column class="chat-container">
@@ -165,11 +176,9 @@ export class ChatView extends LitElement {
       </flex-column>
       <flex-column>
         <flex-column class="chat-container">
-          <array-repeat>
-            <template>
-              <chat-message></chat-message>
-            </template>
-          </array-repeat>
+          <!-- ${this.messages.map((message) => html`<chat-message .message=${message}></chat-message>`)} -->
+
+          ${this.messages.map((message) => html`${message.text}`)}
         </flex-column>
 
         <flex-row class="additions">
@@ -182,7 +191,7 @@ export class ChatView extends LitElement {
             <textarea class="textarea" placeholder="type here" mode-edit="true"></textarea>
 
             <custom-icon icon="mood" @click=${() => this.onAdditionClick()} style="margin-right: 12px;"></custom-icon>
-            <custom-icon icon="send"> </custom-icon>
+            <custom-icon icon="send" @click=${() => this.send()}> </custom-icon>
           </flex-row>
         </div>
       </flex-column>
