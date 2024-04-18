@@ -65,6 +65,7 @@ export class ChatView extends LitElement {
           height: 100%;
         }
         textarea {
+          font-family: 'NotoColorEmoji';
           padding: 6px 12px;
           width: 100%;
           border: none;
@@ -95,10 +96,15 @@ export class ChatView extends LitElement {
         .additions {
           bottom: 76px;
           position: absolute;
-          transform: translateY(-110%);
+          transform: translate(120%, 110%);
+          opacity: 0;
+          pointer-events: 0;
         }
         .additions[open] {
           transform: translateY(0);
+          pointer-events: auto;
+          opacity: 1;
+          transition: opacity ease-in 120ms, opacity ease-in 240ms;
         }
 
         custom-button[type='tertiary'] custom-icon {
@@ -128,18 +134,12 @@ export class ChatView extends LitElement {
   @query('textarea')
   accessor textarea
 
-  #onEmojiSelected = ({ detail }) => {
-    console.log(detail)
-
-    this.textarea.value += detail
-  }
-
   send() {
     this.messages.push({
       sender: 'Iondependent',
       text: this.textarea.value
     })
-
+    this.textarea.value = ''
     this.requestUpdate()
   }
 
@@ -183,7 +183,7 @@ export class ChatView extends LitElement {
 
         <flex-row class="additions">
           <flex-it></flex-it>
-          <emoji-selector data-route="emoji" @emoji-selected=${this.#onEmojiSelected}></emoji-selector>
+          <emoji-selector data-route="emoji"></emoji-selector>
         </flex-row>
 
         <div class="input-wrapper">

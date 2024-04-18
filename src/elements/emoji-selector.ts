@@ -2,8 +2,9 @@ import { LitElement, css, html } from 'lit'
 import './../array-repeat.js'
 import * as uEmojiParser from 'universal-emoji-parser'
 import { customElement, property } from 'lit/decorators.js'
+
 @customElement('emo-ji')
-class EmoJi extends LitElement {
+export class EmoJi extends LitElement {
   @property({ type: String })
   accessor emoji
 
@@ -37,72 +38,85 @@ class EmoJi extends LitElement {
   }
 }
 
-customElements.define(
-  'emoji-selector',
-  class EmojiSelector extends HTMLElement {
-    get _pages() {
-      return this.shadowRoot.querySelector('custom-pages')
+@customElement('emoji-selector')
+export class EmojiSelector extends HTMLElement {
+  get _pages() {
+    return this.shadowRoot.querySelector('custom-pages')
+  }
+  constructor() {
+    super()
+    this.attachShadow({ mode: 'open' })
+    this.render()
+  }
+  async connectedCallback() {
+    this._select = this._select.bind(this)
+    this.shadowRoot.querySelector('custom-tabs').addEventListener('selected', this._select)
+    this.addEventListener('click', (event) => {
+      const paths = event.composedPath()
+      if (paths[0].localName === 'emo-ji') {
+        this.dispatchEvent(new CustomEvent('emoji-selected', { detail: paths[0].emoji }))
+      }
+    })
+    const supportedEmojiVersion = this.getSupportedEmojiVersion()
+    const _emojis = (await import('./../../node_modules/unicode-emoji-json/data-by-group.json')).default
+    const emojis = {}
+
+    for (const entry of Object.entries(_emojis)) {
+      emojis[entry[0]] = entry[1].filter((emoji) => Number(emoji.unicode_version) <= supportedEmojiVersion)
     }
-    constructor() {
-      super()
-      this.attachShadow({ mode: 'open' })
-      this.render()
-    }
-    async connectedCallback() {
-      this._select = this._select.bind(this)
-      this.shadowRoot.querySelector('custom-tabs').addEventListener('selected', this._select)
-      this.addEventListener('click', (event) => {
-        const paths = event.composedPath()
-        if (paths[0].localName === 'emo-ji') {
-          this.dispatchEvent(new CustomEvent('emoji-selected', { detail: paths[0].emoji }))
-        }
-      })
 
-      globalThis.emojis = (await import('./../../node_modules/unicode-emoji-json/data-by-group.json')).default
-      // const emojis = await self._parseEmojis()
-      // await this._buildPages(globalThis.emojis)
+    globalThis.emojis = emojis
+    // const emojis = await self._parseEmojis()
+    // await this._buildPages(globalThis.emojis)
 
-      this.shadowRoot.querySelector('custom-tabs').querySelector('[data-route="Smileys & Emotion"]').click()
-    }
+    this.shadowRoot.querySelector('custom-tabs').querySelector('[data-route="Smileys & Emotion"]').click()
+  }
 
-    _initPage(category, itemsLength) {
-      const page = document.createElement('span')
+  _initPage(category, itemsLength) {
+    const page = document.createElement('span')
 
-      page.classList.add('page')
-      page.dataset.route = category
-      const height = `${(itemsLength / 8) * 50}px`
+    page.classList.add('page')
+    page.dataset.route = category
+    const height = `${(itemsLength / 8) * 50}px`
 
-      page.innerHTML = `
+    page.innerHTML = `
       <array-repeat max="48" height="${height}">
         <template>
-        <emo-ji title="[[item.title]]" emoji="[[item.emoji]]" name="[[item.name]]" slug="[[item.slug]]">
+        <emo-ji title="[[item.name]]" emoji="[[item.emoji]]" name="[[item.name]]" slug="[[item.slug]]">
           [[item.img]]
         </emo-ji>
         </template>
       </array-repeat>
       `
-      this._pages.appendChild(page)
-      return page
+    this._pages.appendChild(page)
+    return page
+  }
+
+  getSupportedEmojiVersion() {
+    if (navigator.userAgent.includes('Windows NT 10.0')) {
+      return 12
     }
+    return 15
+  }
 
-    _select({ detail }) {
-      console.log({ detail })
+  _select({ detail }) {
+    console.log({ detail })
 
-      const route = detail.getAttribute('data-route')
-      if (!this.shadowRoot.querySelector(`span[data-route="${route}"]`)) {
-        const page = this._initPage(route, globalThis.emojis[route].length)
+    const route = detail.getAttribute('data-route')
+    if (!this.shadowRoot.querySelector(`span[data-route="${route}"]`)) {
+      const page = this._initPage(route, globalThis.emojis[route].length)
 
-        this._pages.select(route)
-        globalThis.emojis[route].map((emoji) => {
-          emoji.img = uEmojiParser.parse(`:${emoji.slug}:`).replace('<img', '<img loading="lazy"')
-          return emoji
-        })
+      this._pages.select(route)
+      globalThis.emojis[route].map((emoji) => {
+        emoji.img = uEmojiParser.parse(`:${emoji.slug}:`).replace('<img', '<img loading="lazy"')
+        return emoji
+      })
 
-        page.querySelector('array-repeat').items = globalThis.emojis[route]
-      } else this._pages.select(route)
-    }
-    render() {
-      this.shadowRoot.innerHTML = `
+      page.querySelector('array-repeat').items = globalThis.emojis[route]
+    } else this._pages.select(route)
+  }
+  render() {
+    this.shadowRoot.innerHTML = `
     <style>
       :host {
         display: flex;
@@ -111,6 +125,7 @@ customElements.define(
         width: 416px;
         align-items: center;
         border-radius: 20px;
+        font-family: emoji;
         box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.14), 0 1px 8px 0 rgba(0, 0, 0, 0.12), 0 3px 3px -2px rgba(0, 0, 0, 0.4);
       }
       custom-tab, custom-tabs {
@@ -190,6 +205,5 @@ customElements.define(
       <custom-tab data-route="Flags" title="Flags"><custom-icon icon="flags"></custom-icon></custom-tab>
     </custom-tabs>
     `
-    }
   }
-)
+}
