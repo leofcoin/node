@@ -5,7 +5,7 @@ import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import modify from 'rollup-plugin-modify'
 import json from '@rollup/plugin-json'
-import packagesJSON from './package.json' assert { type: 'json' }
+import packagesJSON from './package.json' with { type: 'json' }
 import materialSymbols from 'rollup-plugin-material-symbols'
 import polyfill from 'rollup-plugin-polyfill-node'
 import { readFile, writeFile } from 'fs/promises'
