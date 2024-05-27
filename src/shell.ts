@@ -19,7 +19,7 @@ import '@vandeurenglenn/flex-elements/it.js'
 import '@vandeurenglenn/lite-elements/theme.js'
 import './elements/sync-info.js'
 import Router from './router.js'
-import type { CustomPages } from '@vandeurenglenn/lite-elements/pages.js'
+import { CustomPages } from '@vandeurenglenn/lite-elements/pages.js'
 
 import { LiteElement, property, query, css, html, customElement } from '@vandeurenglenn/lite'
 
@@ -27,8 +27,10 @@ globalThis.pubsub = globalThis.pubsub || new Pubsub(true)
 
 @customElement('app-shell')
 class AppShell extends LiteElement {
+  @property({ provides: true }) accessor blocks
+
   @property({ type: Boolean })
-  accessor openSync: boolean = false
+  accessor openSync = false
 
   @property({ type: Number })
   accessor lastBlockIndex = 0

@@ -28,6 +28,8 @@ export class ExplorerBlock extends LiteElement {
   }
 
   render() {
+    console.log(this.block)
+
     if (!this.block) {
       return html` <busy-animation></busy-animation> `
     }

@@ -1,35 +1,30 @@
-import { css, html, LitElement } from 'lit'
-import { map } from 'lit/directives/map.js'
+import { css, html, LiteElement, property, query, customElement } from '@vandeurenglenn/lite'
 import '../elements/latest.js'
 import '../elements/explorer/info-container.js'
-import { formatBytes } from '@leofcoin/utils'
 import '../elements/navigation-bar.js'
-import { query } from 'lit/decorators.js'
-import { customElement } from '@vandeurenglenn/lite'
-import Router from '../router.js'
+import Router from './../router.js'
 
 @customElement('explorer-view')
-export class ExplorerView extends LitElement {
-  static properties = {
-    selected: {
-      type: String
-    }
-  }
+export class ExplorerView extends LiteElement {
+  @property() accessor selected
+
   static get styles() {
-    return css`
-      :host {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        height: 100%;
-        overflow-y: auto;
-      }
-      custom-pages {
-        width: 100%;
-        height: 100%;
-      }
-    `
+    return [
+      css`
+        :host {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: 100%;
+          height: 100%;
+          overflow-y: auto;
+        }
+        custom-pages {
+          width: 100%;
+          height: 100%;
+        }
+      `
+    ]
   }
 
   @query('custom-pages')
@@ -38,10 +33,9 @@ export class ExplorerView extends LitElement {
   async select(selected) {
     console.log(selected)
     this.selected = selected
-    await this.updateComplete
     if (!customElements.get(`explorer-${selected}`)) await import(`./explorer-${selected}.js`)
     this.pages.select(selected)
-    this.renderRoot.querySelector('navigation-bar')?.select(selected)
+    this.shadowRoot.querySelector('navigation-bar')?.select(selected)
   }
 
   #customSelect({ detail }) {

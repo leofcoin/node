@@ -1,4 +1,4 @@
-import palenightItalic from '../vs-themes/palenight-italic.json' assert { type: 'json' }
+import palenightItalic from '../vs-themes/palenight-italic.json' with { type: 'json' }
 import Storage from '@leofcoin/storage'
 import { convertTheme } from '@vandeurenglenn/monaco-utils'
 import { LiteElement, html } from '@vandeurenglenn/lite'

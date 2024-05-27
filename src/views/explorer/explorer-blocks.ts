@@ -1,35 +1,17 @@
-import { html, LitElement } from 'lit'
+import { html, LiteElement, customElement, property } from '@vandeurenglenn/lite'
 import { map } from 'lit/directives/map.js'
 import '../../elements/latest.js'
 import '../../elements/explorer/info-container.js'
 import { formatBytes } from '@leofcoin/utils'
-import { customElement, property } from 'lit/decorators.js'
+import { BlockMessage } from '@leofcoin/messages'
 
 @customElement('explorer-blocks')
-export class ExplorerBlocks extends LitElement {
-  @property({ type: Array })
-  accessor items: []
+export class ExplorerBlocks extends LiteElement {
+  @property({ type: Array }) accessor items: []
 
+  @property({ consumes: true }) accessor blocks
   #blocks = []
   #transactions = []
-
-  async updateInfo() {
-    const lookupValidators = await client.lookup('ArtOnlineValidators')
-
-    const validators = await client.staticCall(lookupValidators.address, 'validators', [])
-    const lookupFactory = await client.lookup('ArtOnlineContractFactory')
-  }
-
-  async select(selected) {
-    if (!customElements.get(`${selected}-view`)) await import(`./${selected}.js`)
-    this.selected = selected
-    this.shadowRoot.querySelector('custom-pages').select(selected)
-  }
-
-  setInfo(hash, index) {
-    console.log(hash, index)
-    this.shadowRoot.querySelector('custom-pages').querySelector('.custom-selected').updateInfo(hash, index)
-  }
 
   #addBlock(block) {
     console.log(block)
@@ -38,25 +20,22 @@ export class ExplorerBlocks extends LitElement {
     } else {
       this.#transactions = [...block.transactions, ...this.#transactions.slice(-(block.transactions.length - 1))]
     }
+    this.blocks.push(block)
+  }
 
-    this.requestUpdate()
+  async onChange(propertyKey: string, value: any): Promise<void> {
+    if (propertyKey === 'blocks') {
+      let i = 0
+      while (this.#transactions.length < 25 && this.blocks.length - 1 >= i) {
+        if (this.blocks[i].transactions.length < 25)
+          this.blocks[i].transactions.slice(0, this.blocks[i].transactions.length - 1)
+        this.#transactions = [...this.#transactions, ...this.blocks[i].transactions.slice(-25)]
+        i++
+      }
+    }
   }
 
   async connectedCallback() {
-    super.connectedCallback()
-    this.#blocks = (await client.blocks(-25)).reverse()
-    console.log(this.#blocks)
-    let i = 0
-    while (this.#transactions.length < 25 && this.#blocks.length - 1 >= i) {
-      console.log(this.#blocks[i])
-      if (this.#blocks[i].transactions.length < 25)
-        this.#blocks[i].transactions.slice(0, this.#blocks[i].transactions.length - 1)
-      this.#transactions = [...this.#transactions, ...this.#blocks[i].transactions.slice(-25)]
-      i++
-    }
-
-    this.requestUpdate()
-
     client.pubsub.subscribe('add-block', this.#addBlock.bind(this))
     client.pubsub.subscribe('block-processed', this.#addBlock.bind(this))
   }
@@ -132,10 +111,9 @@ export class ExplorerBlocks extends LitElement {
       </style>
       <flex-column class="container">
         <flex-column class="latest-blocks">
-          ${map(
-            this.#blocks,
-            (item) => html` <latest-element value=${JSON.stringify(item)} type="block"></latest-element> `
-          )}
+          ${this.blocks
+            ? map(this.blocks, (item) => html` <latest-element .value=${item} type="block"></latest-element> `)
+            : ''}
         </flex-column>
       </flex-column>
     `

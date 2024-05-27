@@ -235,17 +235,14 @@ export default customElements.define(
           }
         </style>
         <hero-element>
-        <flex-wrap-around>
-          ${map(
-            this.items,
-            (item, index) =>
-              html`
-                <explorer-info title=${item.title} items=${JSON.stringify(item.items)} index=${index}></explorer-info>
-              `
-          )}
-        </flex-wrap-around>
+          <flex-wrap-around>
+            ${map(
+              this.items,
+              (item, index) =>
+                html` <explorer-info title=${item.title} .items=${item.items} index=${index}></explorer-info> `
+            )}
+          </flex-wrap-around>
         </hero-element>
-        
       `
     }
   }
