@@ -283,8 +283,6 @@ class AppShell extends LiteElement {
           <span name="cake">@symbol-cake</span>
           <span name="account-balance">@symbol-account_balance</span>
           <span name="euro-symbol">@symbol-euro_symbol</span>
-          <span name="flags">@symbol-emoji_flags</span>
-          <span name="people">@symbol-emoji_people</span>
           <span name="gif">@symbol-gif</span>
           <span name="list">@symbol-list_alt</span>
           <span name="call_received">@symbol-call_received</span>

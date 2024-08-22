@@ -30,11 +30,24 @@ if (env.NODE_ENV === 'development') {
     `
   <body>
   <script>
-    const ws = new WebSocket(location.protocol === 'https:' ? 'wss://' + location.host : 'ws://' + location.host, 'reload-app')
-    ws.addEventListener('open', () => {
+    let ws = new WebSocket(location.protocol === 'https:' ? 'wss://' + location.host : 'ws://' + location.host, 'reload-app')
+
+
+    const handler = () => {
+      const timeout = () => setTimeout(() => {
+        ws = new WebSocket(location.protocol === 'https:' ? 'wss://' + location.host : 'ws://' + location.host, 'reload-app')
+
+        handler()
+      }, 5000);
+      ws.addEventListener('open', () => {
       ws.addEventListener('message', () => location.reload())
     })
-    
+      ws.addEventListener('close', timeout);
+    }
+
+    handler()
+
+
   </script>
   `
   )

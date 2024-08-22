@@ -21,7 +21,8 @@ export class ValidatorView extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback()
-    const result = await client.lookup('ArtOnlineValidators')
+    const result = await client.lookup('LeofcoinValidators')
+    console.log({ result })
 
     this.validators = await client.staticCall(result.address, 'validators', [])
     console.log(this.validators)

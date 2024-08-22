@@ -106,11 +106,10 @@ export class LoginScreen extends LitElement {
   }
 
   async #handleBeforeLogin(password) {
-    console.log('handle')
-
     this.shadowRoot.querySelector('input').value = null
     let wallet
     this.hasWallet = await this._hasWallet()
+
     if (!this.hasWallet && !this.importing) {
       wallet = await generateAccount(password, 'leofcoin:peach')
       globalThis.walletStore.put('identity', JSON.stringify(wallet.identity))
@@ -126,10 +125,7 @@ export class LoginScreen extends LitElement {
       )
       wallet = { identity, accounts, selectedAccount, selectedAccountIndex }
     }
-
     globalThis.identityController = new IdentityController('leofcoin:peach', wallet)
-    console.log('handled')
-
     return wallet
   }
 
@@ -308,7 +304,12 @@ export class LoginScreen extends LitElement {
     return html`
       <input type="password" placeholder="password" tabindex="0" autofocus autocomplete="current-password" />
       <flex-it></flex-it>
-      <custom-button type="outlined" label="login" data-route-action="login" style="width: 100%; max-width: 190px; margin-bottom: 12px;"></custom-button>
+      <custom-button
+        type="outlined"
+        label="login"
+        data-route-action="login"
+        style="width: 100%; max-width: 190px; margin-bottom: 12px;"
+      ></custom-button>
     `
   }
 
