@@ -150,8 +150,8 @@ export default [
   },
   {
     input: [
-      './node_modules/@leofcoin/workers/src/machine-worker.js',
-      './node_modules/@leofcoin/workers/src/block-worker.js'
+      './node_modules/@leofcoin/workers/exports/machine-worker.js',
+      './node_modules/@leofcoin/workers/exports/block-worker.js'
     ],
     output: {
       dir: './www/workers',

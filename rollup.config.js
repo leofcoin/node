@@ -31,7 +31,7 @@ if (env.NODE_ENV === 'development') {
     ws.addEventListener('open', () => {
       ws.addEventListener('message', () => location.reload())
     })
-    
+
   </script>
   `
   )
@@ -124,8 +124,8 @@ export default [
   },
   {
     input: [
-      './node_modules/@leofcoin/workers/src/machine-worker.js',
-      './node_modules/@leofcoin/workers/src/block-worker.js'
+      './node_modules/@leofcoin/workers/exports/machine-worker.js',
+      './node_modules/@leofcoin/workers/exports/block-worker.js'
     ],
     output: {
       dir: './www/workers',

@@ -2,7 +2,7 @@ import { html, LiteElement, property } from '@vandeurenglenn/lite'
 import { map } from 'lit/directives/map.js'
 import '../../elements/latest.js'
 import '../../elements/explorer/info-container.js'
-import { formatBytes } from '@leofcoin/utils'
+import { formatBytes, formatUnits } from '@leofcoin/utils'
 import '@vandeurenglenn/flex-elements/wrap-around.js'
 import { BlockMessage } from '@leofcoin/messages'
 
@@ -50,15 +50,15 @@ export default customElements.define(
           items: [
             {
               title: 'transfers',
-              value: await client.nativeTransfers()
+              value: BigInt(await client.nativeTransfers()).toString()
             },
             {
               title: 'burns',
-              value: await client.nativeBurns()
+              value: BigInt(await client.nativeBurns()).toString()
             },
             {
               title: 'mints',
-              value: await client.nativeMints()
+              value: BigInt(await client.nativeMints()).toString()
             }
           ]
         },
@@ -80,15 +80,15 @@ export default customElements.define(
           items: [
             {
               title: 'total',
-              value: (await client.contracts()).length
+              value: await client.totalContracts()
             },
             {
               title: 'registered',
-              value: await client.staticCall(lookupFactory.address, 'totalContracts')
+              value: BigInt(await client.staticCall(lookupFactory.address, 'totalContracts')).toString()
             },
             {
               title: 'native calls',
-              value: await client.nativeCalls()
+              value: BigInt(await client.nativeCalls()).toString()
             }
           ]
         },
@@ -97,11 +97,11 @@ export default customElements.define(
           items: [
             {
               title: 'blocks',
-              value: await client.totalBlocks()
+              value: await client.lastBlockHeight()
             },
             {
               title: 'transactions',
-              value: await client.totalTransactions()
+              value: BigInt(await client.totalTransactions()).toString()
             },
             {
               title: 'size',
