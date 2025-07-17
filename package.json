@@ -35,7 +35,7 @@
     "websocket": "^1.0.35"
   },
   "dependencies": {
-    "@leofcoin/chain": "^1.7.90",
+    "@leofcoin/chain": "^1.7.91",
     "@leofcoin/codec-format-interface": "^1.7.13",
     "@leofcoin/endpoint-clients": "^0.3.15",
     "@leofcoin/identity-utils": "^1.0.2",
