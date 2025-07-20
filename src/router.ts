@@ -64,14 +64,14 @@ export default class Router {
     if (route) {
       await this.#host.select(route)
       let previousRoute = this.#host.pages.querySelector('.custom-selected') as Selectable
-      if (subroutes.length === 0 && !previousRoute.pages.selected) {
+      if (subroutes.length === 0 && !previousRoute.pages?.selected) {
         // handleDefaults
         if (route === 'wallet') subroutes.push('send')
         if (route === 'explorer' || route === 'identity') subroutes.push('dashboard')
       }
       for (const route of subroutes) {
         await previousRoute.select(route)
-        previousRoute = previousRoute.pages.querySelector('.custom-selected')
+        previousRoute = previousRoute.pages?.querySelector('.custom-selected')
 
         if (route === 'blocks' || route === 'transactions') {
           const task = async () => {

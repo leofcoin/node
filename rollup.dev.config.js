@@ -20,8 +20,10 @@ const views = [
     .map((path) => join('./src/views', path))
     .filter((path) => path.endsWith('.ts')),
   ...(await readdir('./src/views/explorer')).map((path) => join('./src/views/explorer', path)),
-  ...(await readdir('./src/views/identity')).map((path) => join('./src/views/identity', path))
+  ...(await readdir('./src/views/identity')).map((path) => join('./src/views/identity', path)),
+  ...(await readdir('./src/views/wallet')).map((path) => join('./src/views/wallet', path))
 ]
+console.log(views)
 
 let index = await readFile('./src/index.html', 'utf-8')
 if (env.NODE_ENV === 'development') {
@@ -117,7 +119,7 @@ await cp('node_modules/@vandeurenglenn/lit-elements/exports/themes/default', 'ww
 
 export default [
   {
-    input: ['./src/shell.ts', ...views],
+    input: ['./src/shell.ts', ...views, 'node_modules/@leofcoin/storage/exports/browser-store.js'],
     output: {
       dir: './www',
       format: 'es'
@@ -126,9 +128,9 @@ export default [
       './identity.js',
       './../../monaco/monaco-loader.js',
       '@monaco-import',
-      './node-browser.js',
-      '@leofcoin/storage',
-      './storage.js'
+      './node-browser.js'
+      // '@leofcoin/storage',
+      // './storage.js'
     ],
     plugins: [
       typescript(),
@@ -143,7 +145,7 @@ export default [
         '@build': BUILD,
         '@version': packagesJSON.version,
         '@monaco-import': './../../monaco/monaco-loader.js',
-        '@leofcoin/storage': './storage.js',
+        // '@leofcoin/storage': './storage.js',
         './exports/browser/workers/machine-worker.js': 'workers/machine-worker.js'
       })
     ]

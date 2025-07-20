@@ -17,7 +17,8 @@ const BUILD = `${date.getUTCFullYear()}_${date.getDay()}_${date.getMonth()}-${da
 const views = [
   ...(await readdir('./src/views')).map((path) => join('./src/views', path)).filter((path) => path.endsWith('.ts')),
   ...(await readdir('./src/views/explorer')).map((path) => join('./src/views/explorer', path)),
-  ...(await readdir('./src/views/identity')).map((path) => join('./src/views/identity', path))
+  ...(await readdir('./src/views/identity')).map((path) => join('./src/views/identity', path)),
+  ...(await readdir('./src/views/wallet')).map((path) => join('./src/views/wallet', path))
 ]
 
 let index = await readFile('./src/index.html', 'utf-8')
@@ -99,7 +100,7 @@ await cp('node_modules/@vandeurenglenn/lit-elements/exports/themes/default', 'ww
 
 export default [
   {
-    input: ['./src/shell.ts', ...views, './node_modules/@leofcoin/storage/exports/browser-store.js'],
+    input: ['./src/shell.ts', ...views, 'node_modules/@leofcoin/storage/exports/storage.js'],
     output: {
       dir: './www',
       format: 'es'
@@ -119,6 +120,22 @@ export default [
         '@version': packagesJSON.version,
         '@monaco-import': './../../monaco/monaco-loader.js',
         './exports/browser/workers/machine-worker.js': 'workers/machine-worker.js'
+      })
+    ]
+  },
+  {
+    input: ['./node_modules/@leofcoin/storage/exports/browser-store.js'],
+    output: {
+      dir: './www',
+      format: 'es'
+    },
+    plugins: [
+      json(),
+      modify({
+        '@leofcoin/storage': './storage.js'
+      }),
+      resolve({
+        mainFields: ['module', 'browser']
       })
     ]
   },

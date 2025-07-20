@@ -1,5 +1,5 @@
 import palenightItalic from '../vs-themes/palenight-italic.json' with { type: 'json' }
-import Storage from '@leofcoin/storage'
+import { Storage } from '@leofcoin/storage'
 import { convertTheme } from '@vandeurenglenn/monaco-utils'
 import { LiteElement, html } from '@vandeurenglenn/lite'
 // import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution'
@@ -10,25 +10,52 @@ export default customElements.define(
   class editorView extends LiteElement {
     #editor
     #enterAmount = 0
-    editorStore = new Storage('editor')
+    editorStore: Storage
 
     dependencies = ['@leofcoin:standards']
+    ready = new Promise((resolve) => {
+      globalThis.pubsub.subscribe('node:ready', () => {
+        resolve(true)
+      })
+    })
 
-    async connectedCallback() {
+    toPathname(path: string) {
+      return path.replaceAll('$__sep__', '/')
+    }
+
+    toAccessPathname(path) {
+      return path.replaceAll('/', '$__sep__')
+    }
+
+    async setupStore() {
+      await this.ready
+      await globalThis.peernet.addStore('editor', 'lfc', '.leofcoin', true)
+
+      this.editorStore = globalThis.editorStore
       await this.editorStore.init()
-      const importee = await import('@monaco-import')
-      console.log(importee)
+    }
 
-      globalThis.monaco = importee.default
+    async #loadMonaco() {
+      if (!globalThis.monaco) {
+        const importee = await import('@monaco-import')
+
+        globalThis.monaco = importee.default
+      }
 
       let span = document.createElement('span')
       span.classList.add('container')
       document.body.querySelector('app-shell').appendChild(span)
+    }
 
-      if (!(await this.editorStore.has('templates/wizard/my-token.js'))) {
-        await this.editorStore.put(
-          'templates/wizard/my-token.js',
-          `
+    async #setupContracts() {
+      const contracts: { [index: string]: ArrayBuffer } = {}
+
+      let fetcher
+
+      try {
+        contracts.token = await this.editorStore.get(this.toAccessPathname('templates/wizard/my-token.js'))
+      } catch (error) {
+        const contract = `
       import Token from '@leofcoin/standards/token.js'
 
       export default class MyToken extends Token {
@@ -37,32 +64,58 @@ export default customElements.define(
         }
       }
       `
-        )
-
-        let fetcher = await fetch('https://raw.githubusercontent.com/leofcoin/standards/main/exports/token.js')
-        await this.editorStore.put('templates/standards/token.js', await fetcher.text())
-
-        fetcher = await fetch('https://raw.githubusercontent.com/leofcoin/standards/main/exports/roles.js')
-        await this.editorStore.put('templates/standards/roles.js', await fetcher.text())
+        await this.editorStore.put(this.toAccessPathname('templates/wizard/my-token.js'), contract)
+        contracts.token = await this.editorStore.get(this.toAccessPathname('templates/wizard/my-token.js'))
       }
 
-      const token = await this.editorStore.get('templates/wizard/my-token.js')
-      const standard = await this.editorStore.get('templates/standards/token.js')
-      const roles = await this.editorStore.get('templates/standards/roles.js')
+      try {
+        contracts.standard = await this.editorStore.get(this.toAccessPathname('templates/standards/token.js'))
+      } catch (error) {
+        fetcher = await fetch('https://raw.githubusercontent.com/leofcoin/standards/main/exports/token.js')
+        await this.editorStore.put(this.toAccessPathname('templates/standards/token.js'), await fetcher.text())
+        contracts.standard = await this.editorStore.get(this.toAccessPathname('templates/standards/token.js'))
+      }
 
-      monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-        ...monaco.languages.typescript.javascriptDefaults.getCompilerOptions(),
-        target: monaco.languages.typescript.ScriptTarget.Latest,
-        allowNonTsExtensions: true,
-        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-        module: monaco.languages.typescript.ModuleKind.ESNext,
-        esModuleInterop: true,
-        allowJs: true,
-        isolatedModules: true
-      })
+      try {
+        contracts.roles = await this.editorStore.get(this.toAccessPathname('templates/standards/roles.js'))
+      } catch (error) {
+        fetcher = await fetch('https://raw.githubusercontent.com/leofcoin/standards/main/exports/roles.js')
+        await this.editorStore.put(this.toAccessPathname('templates/standards/roles.js'), await fetcher.text())
+        contracts.roles = await this.editorStore.get(this.toAccessPathname('templates/standards/roles.js'))
+      }
 
-      monaco.languages.typescript.javascriptDefaults.addExtraLib(
-        `
+      return contracts
+    }
+
+    async connectedCallback() {
+      super.connectedCallback()
+
+      try {
+        await this.setupStore()
+        await this.#loadMonaco()
+        const { token, roles, standard } = await this.#setupContracts()
+
+        monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+          ...monaco.languages.typescript.javascriptDefaults.getDiagnosticsOptions(),
+          noSemanticValidation: false,
+          noSuggestionDiagnostics: false,
+          noSyntaxValidation: false
+        })
+
+        monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+          ...monaco.languages.typescript.javascriptDefaults.getCompilerOptions(),
+          target: monaco.languages.typescript.ScriptTarget.Latest,
+          allowNonTsExtensions: true,
+          moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+          module: monaco.languages.typescript.ModuleKind.ESNext,
+          esModuleInterop: true,
+          allowJs: true,
+          checkJs: true,
+          isolatedModules: true
+        })
+
+        monaco.languages.typescript.javascriptDefaults.addExtraLib(
+          `
     class Roles {
       #private;
       constructor(roles: {});
@@ -101,67 +154,70 @@ export default customElements.define(
         get holders(): number;
         get balances(): {};
         mint(to: any, amount: any): void;
-        burn(from: address, amount: BigNumber): void;
-        balanceOf(address: address): BigNumber;
-        setApproval(operator: address, amount: BigNumber): void;
-        approved(owner: address, operator: address, amount: BigNumber): boolean;
-        transfer(from: address, to: address, amount: BigNumber): void;
+        burn(from: address, amount: BigInt): void;
+        balanceOf(address: address): BigInt;
+        setApproval(operator: address, amount: BigInt): void;
+        approved(owner: address, operator: address, amount: BigInt): boolean;
+        transfer(from: address, to: address, amount: BigInt): void;
     }
     };
   }`,
-        'index.d.ts'
-      )
-      // monaco.languages.typescript.javascriptDefaults.addExtraLib(`
-      // declare class Token {
-      //   private #name: string;
-      //   constructor(name: string, symbol: string, decimals = 18, state: object)
-      // }
-      // `, 'token.d.ts')
+          'index.d.ts'
+        )
+        // monaco.languages.typescript.javascriptDefaults.addExtraLib(`
+        // declare class Token {
+        //   private #name: string;
+        //   constructor(name: string, symbol: string, decimals = 18, state: object)
+        // }
+        // `, 'token.d.ts')
 
-      const tokenModel = monaco.editor.createModel(
-        new TextDecoder().decode(token),
-        'javascript',
-        monaco.Uri.parse('file://templates/my-token.js')
-      )
+        const tokenModel = monaco.editor.createModel(
+          new TextDecoder().decode(token),
+          'javascript',
+          monaco.Uri.parse('file://templates/my-token.js')
+        )
 
-      const standardModel = monaco.editor.createModel(
-        new TextDecoder().decode(standard),
-        'javascript',
-        monaco.Uri.parse('file://templates/node_modules/@leofcoin/standards/token.js')
-      )
-      const standarRolesdModel = monaco.editor.createModel(
-        new TextDecoder().decode(roles),
-        'javascript',
-        monaco.Uri.parse('file://templates/node_modules/@leofcoin/standards/roles.js')
-      )
+        const standardModel = monaco.editor.createModel(
+          new TextDecoder().decode(standard),
+          'javascript',
+          monaco.Uri.parse('file://templates/node_modules/@leofcoin/standards/token.js')
+        )
+        const standarRolesdModel = monaco.editor.createModel(
+          new TextDecoder().decode(roles),
+          'javascript',
+          monaco.Uri.parse('file://templates/node_modules/@leofcoin/standards/roles.js')
+        )
 
-      monaco.editor.defineTheme('palenight-italic', convertTheme(palenightItalic))
+        monaco.editor.defineTheme('palenight-italic', convertTheme(palenightItalic))
 
-      this.#editor = monaco.editor.create(document.querySelector('.container'), {
-        theme: 'palenight-italic'
-      })
+        this.#editor = monaco.editor.create(document.querySelector('.container'), {
+          theme: 'palenight-italic'
+        })
 
-      this.#editor.setModel(standardModel)
-      this.#editor.setModel(standarRolesdModel)
-      this.#editor.setModel(tokenModel)
+        this.#editor.setModel(standardModel)
+        this.#editor.setModel(standarRolesdModel)
+        this.#editor.setModel(tokenModel)
 
-      this.#editor.onKeyUp((e) => {
-        const position = this.#editor.getPosition()
-        const text = this.#editor.getModel().getLineContent(position.lineNumber).trim()
+        this.#editor.onKeyUp((e) => {
+          const position = this.#editor.getPosition()
+          const text = this.#editor.getModel().getLineContent(position.lineNumber).trim()
 
-        if (e.keyCode !== monaco.KeyCode.Enter) this.#enterAmount = 0
-        if (e.keyCode === monaco.KeyCode.Enter && !text) {
-          this.#enterAmount += 1
-          if (this.#enterAmount === 2) {
-            this.#editor.trigger('', 'editor.action.triggerSuggest', '')
-            this.#enterAmount = 0
+          if (e.keyCode !== monaco.KeyCode.Enter) this.#enterAmount = 0
+          if (e.keyCode === monaco.KeyCode.Enter && !text) {
+            this.#enterAmount += 1
+            if (this.#enterAmount === 2) {
+              this.#editor.trigger('', 'editor.action.triggerSuggest', '')
+              this.#enterAmount = 0
+            }
           }
-        }
-      })
+        })
 
-      pubsub.subscribe('deployment-dependencies', this.ondependencies.bind(this))
+        pubsub.subscribe('deployment-dependencies', this.ondependencies.bind(this))
 
-      this.shadowRoot.querySelector('button').addEventListener('click', this.deploy.bind(this))
+        this.shadowRoot.querySelector('button').addEventListener('click', this.deploy.bind(this))
+      } catch (error) {
+        console.error('Error during editor setup:', error)
+      }
     }
 
     ondependencies(dependencies) {
