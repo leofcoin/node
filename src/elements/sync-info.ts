@@ -1,86 +1,69 @@
-import { LitElement, PropertyValueMap, css, html } from 'lit'
-import { customElement, property, state } from 'lit/decorators.js'
-
-@customElement('sync-info')
-export class SyncInfo extends LitElement {
+import { LiteElement, css, html, property, query } from '@vandeurenglenn/lite'
+import '@vandeurenglenn/lite-elements/pane.js'
+import { CustomPane } from '@vandeurenglenn/lite-elements/pane.js'
+export class SyncInfo extends LiteElement {
   @property({ type: Boolean })
-  accessor open: boolean = false
+  accessor open: boolean
 
-  @property({ type: Number })
+  @property({ type: Number, consumes: true })
   accessor lastBlockIndex = 0
 
-  @property({ type: Number })
+  @property({ type: Number, consumes: true })
   accessor totalResolved = 0
 
-  @property({ type: Number })
+  @property({ type: Number, consumes: true })
   accessor totalLoaded = 0
 
-  @property({ type: Boolean, reflect: true })
-  accessor animating
+  @query('custom-pane')
+  accessor pane: CustomPane
 
-  protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (_changedProperties.has('totalResolved') || _changedProperties.has('totalLoaded')) {
-      if (this.totalResolved === 0) return
-      this.animating = true
-      if (this.timeout) clearTimeout(this.timeout)
-      this.timeout = setTimeout(() => {
-        this.animating = false
-      }, 1000)
-    }
-  }
+  @property({ type: String }) accessor id = crypto.randomUUID()
+
   static styles = [
     css`
-      custom-icon {
-        position: absolute;
-        top: 12px;
-        right: 48px;
-
-        cursor: pointer;
-        pointer-events: auto;
-        z-index: 10001;
+      :host {
+        display: contents;
       }
-      custom-dropdown {
-        top: 44px;
-        right: 48px;
+      custom-pane {
+        bottom: 0;
+        left: 50%;
+        max-width: 1200px;
         color: #eee;
+        border-radius: var(--md-sys-shape-corner-large-top);
+        transform: translateX(-50%) translateY(100%);
       }
-
-      :host([animating]) custom-icon {
-        animation-name: spin;
-        animation-duration: 4000ms;
-        animation-iteration-count: infinite;
-        animation-timing-function: linear;
-      }
-
-      @keyframes spin {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
+      custom-pane[open] {
+        transform: translateX(-50%) translateY(0);
       }
     `
   ]
-  protected render(): unknown {
+
+  firstRender(): void {
+    document.addEventListener('custom-pane-close', ({ detail }) => {
+      console.log({ detail })
+
+      if (detail === this.id) {
+        this.open = false
+      }
+    })
+  }
+
+  render() {
     return html`
-      <custom-icon icon="sync" @click=${() => (this.open = !this.open)}></custom-icon>
-      <custom-dropdown .open=${this.open}>
-        <flex-row>
-          <strong style="margin-right: 3px">resolved</strong>
-          <span> ${this.totalResolved} </span>
-          <strong style="margin: 0 3px">of</strong>
-
-          <span>${this.lastBlockIndex} </span>
-        </flex-row>
-        <flex-row>
-          <strong style="margin-right: 3px">loaded</strong>
-          <span> ${this.totalLoaded} </span>
-          <strong style="margin: 0 3px">of</strong>
-
-          <span>${this.lastBlockIndex} </span>
-        </flex-row>
-      </custom-dropdown>
+      <custom-pane
+        .id=${this.id}
+        .open=${this.open}
+        left
+        icon="close"
+        title="Sync Info"
+        @custom-pane-close=${() => (this.open = false)}>
+        <main slot="content">
+          <p>Last Block Index: ${this.lastBlockIndex}</p>
+          <p>Total Resolved: ${this.totalResolved}</p>
+          <p>Total Loaded: ${this.totalLoaded}</p>
+        </main>
+      </custom-pane>
     `
   }
 }
+customElements.define('sync-info', SyncInfo)

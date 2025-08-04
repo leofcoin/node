@@ -1,17 +1,13 @@
 import { formatUnits } from '@leofcoin/utils'
-import { LitElement, html } from 'lit'
-import { map } from 'lit/directives/map.js'
+import { LiteElement, html, property, map, customElement } from '@vandeurenglenn/lite'
 import './time/ago.js'
-import { property } from 'lit/decorators.js'
-import { customElement } from '@vandeurenglenn/lite'
 
 @customElement('latest-element')
-export class LatestElement extends LitElement {
+export class LatestElement extends LiteElement {
   @property({ type: Array }) accessor value
   @property({ type: String }) accessor type: string
 
-  constructor() {
-    super()
+  firstRender(): void {
     this.addEventListener('click', this.#click.bind(this))
   }
 
@@ -67,11 +63,16 @@ export class LatestElement extends LitElement {
     if (!this.value) return
     let amount = 0
 
-    if (this.value.method === 'transfer') amount = formatUnits(this.value.params[2])
+    if (this.value.method === 'transfer') amount = this.value.params[2]
     else if (this.value.method === 'mint' || this.value.method === 'burn') {
-      amount = formatUnits(this.value.params[1])
+      amount = this.value.params[1]
     }
+    amount = formatUnits(amount)
     return html`
+      <flex-column class="first-column">
+        <a class="height">${Number(this.value.blockIndex) + 1}</a>
+        <time-ago value=${this.value.timestamp}></time-ago>
+      </flex-column>
       <flex-row class="last-row">
         <flex-column style="min-width: 66%;">
           <flex-row>
@@ -86,7 +87,7 @@ export class LatestElement extends LitElement {
         </flex-column>
         <flex-it></flex-it>
       </flex-row>
-      <div class="total">${Number(amount).toLocaleString()}</div>
+      <div class="total">${Number(amount)}</div>
       <!-- <strong>amount</strong> -->
     `
   }

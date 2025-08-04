@@ -1,41 +1,16 @@
-import { html, LiteElement, customElement, property } from '@vandeurenglenn/lite'
-import { map } from 'lit/directives/map.js'
+import { html, LiteElement, customElement, property, map } from '@vandeurenglenn/lite'
 import '../../elements/latest.js'
-import '../../elements/explorer/info-container.js'
-import { formatBytes } from '@leofcoin/utils'
-import { BlockMessage } from '@leofcoin/messages'
 
 @customElement('explorer-blocks')
 export class ExplorerBlocks extends LiteElement {
-  @property({ type: Array }) accessor items: []
-
   @property({ consumes: true }) accessor blocks
-  #blocks = []
-  #transactions = []
 
   #addBlock(block) {
-    console.log(block)
-    if (block.transactions.length > 25) {
-      this.#transactions = block.transactions.slice(-25)
-    } else {
-      this.#transactions = [...block.transactions, ...this.#transactions.slice(-(block.transactions.length - 1))]
-    }
+    console.log({ 'added-block': block })
     this.blocks.push(block)
   }
 
-  async onChange(propertyKey: string, value: any): Promise<void> {
-    if (propertyKey === 'blocks') {
-      let i = 0
-      while (this.#transactions.length < 25 && this.blocks.length - 1 >= i) {
-        if (this.blocks[i].transactions.length < 25)
-          this.blocks[i].transactions.slice(0, this.blocks[i].transactions.length - 1)
-        this.#transactions = [...this.#transactions, ...this.blocks[i].transactions.slice(-25)]
-        i++
-      }
-    }
-  }
-
-  async connectedCallback() {
+  firstRender(): void {
     client.pubsub.subscribe('add-block', this.#addBlock.bind(this))
     client.pubsub.subscribe('block-processed', this.#addBlock.bind(this))
   }
