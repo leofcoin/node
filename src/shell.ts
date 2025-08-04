@@ -7,7 +7,7 @@ import './screens/login.js'
 import './screens/export.js'
 import './clipboard-copy.js'
 import './screens/login.js'
-import './notification/master.js'
+import './notification/controller.js'
 import './notification/child.js'
 import './elements/account-select.js'
 import '@vandeurenglenn/lite-elements/icon-set.js'
@@ -29,16 +29,13 @@ globalThis.pubsub = globalThis.pubsub || new Pubsub(true)
 class AppShell extends LiteElement {
   @property({ provides: true }) accessor blocks
 
-  @property({ type: Boolean })
-  accessor openSync = false
-
-  @property({ type: Number })
+  @property({ type: Number, provides: true })
   accessor lastBlockIndex = 0
 
-  @property({ type: Number })
+  @property({ type: Number, provides: true })
   accessor totalResolved = 0
 
-  @property({ type: Number })
+  @property({ type: Number, provides: true })
   accessor totalLoaded = 0
 
   @property({ type: Boolean, reflect: true })
@@ -52,6 +49,25 @@ class AppShell extends LiteElement {
   @property({ provider: true })
   accessor wallet
 
+  @property({ type: Boolean, reflect: true, attribute: 'sync-animating' })
+  accessor syncAnimating
+
+  totalResolvedtimeout: number
+
+  onChange(name) {
+    console.log({ name })
+
+    if (name === 'totalResolved' || name === 'totalLoaded') {
+      if (this.totalResolved === 0) return
+      if (this.syncAnimating === true) return
+      this.syncAnimating = true
+      if (this.totalResolvedtimeout) clearTimeout(this.totalResolvedtimeout)
+      this.totalResolvedtimeout = setTimeout(() => {
+        this.syncAnimating = false
+      }, 1000)
+    }
+  }
+
   get nodeReady() {
     return this.#nodeReady
   }
@@ -60,8 +76,8 @@ class AppShell extends LiteElement {
     pubsub.subscribe('node:ready', () => resolve(true))
   })
 
-  get notificationMaster() {
-    return this.shadowRoot.querySelector('notification-master')
+  get notificationController() {
+    return this.shadowRoot.querySelector('notification-controller') as NotificationController
   }
   get #pages() {
     return this.shadowRoot.querySelector('custom-pages')
@@ -98,15 +114,16 @@ class AppShell extends LiteElement {
   }
 
   async connectedCallback() {
+    super.connectedCallback()
     this.router = new Router(this, 'wallet')
     var matchMedia = window.matchMedia('(min-width: 640px)')
     this.#matchMedia(matchMedia)
     matchMedia.onchange = this.#matchMedia(matchMedia)
 
     this.peersConnected = 0
-    pubsub.subscribe('lastBlock', (block) => (this.syncInfo.lastBlockIndex = block.index))
-    pubsub.subscribe('block-resolved', (block) => (this.syncInfo.totalResolved += 1))
-    pubsub.subscribe('block-loaded', (block) => (this.syncInfo.totalLoaded += 1))
+    pubsub.subscribe('lastBlock', (block) => (this.lastBlockIndex = block.index))
+    pubsub.subscribe('block-resolved', (block) => (this.totalResolved += 1))
+    pubsub.subscribe('block-loaded', (block) => (this.totalLoaded += 1))
     try {
       let importee
       importee = await import('@leofcoin/endpoint-clients/ws')
@@ -173,6 +190,7 @@ class AppShell extends LiteElement {
         left: 0;
         right: 0;
         bottom: 0;
+        top: 0;
       }
 
       custom-selector {
@@ -191,6 +209,9 @@ class AppShell extends LiteElement {
         left: 0;
         bottom: 0;
         transform: translateX(-110%);
+        display: flex;
+        flex-direction: column;
+        transition: transform 200ms ease-in-out, opacity 200ms ease-in-out;
       }
 
       :host([navRailShown]) .custom-selector-overlay {
@@ -203,15 +224,32 @@ class AppShell extends LiteElement {
         width: calc(100% - 48px);
       }
 
+      :host([sync-animating]) custom-icon {
+        animation-name: spin;
+        animation-duration: 4000ms;
+        animation-iteration-count: infinite;
+        animation-timing-function: linear;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
       a {
         padding: 12px;
         box-sizing: border-box;
         height: 48px;
       }
 
-      flex-column {
-        width: 100%;
-        height: 100%;
+      .extra-nav-rail {
+        align-items: center;
+        box-sizing: border-box;
+        padding: 6px;
       }
 
       header {
@@ -256,6 +294,8 @@ class AppShell extends LiteElement {
       <custom-icon-set>
         <template>
           <span name="add">@symbol-add</span>
+          <span name="arrow_drop_down">@symbol-arrow_drop_down</span>
+          <span name="arrow_drop_up">@symbol-arrow_drop_up</span>
           <span name="close">@symbol-close</span>
           <span name="notifications">@symbol-notifications</span>
           <span name="sync">@symbol-sync</span>
@@ -288,6 +328,8 @@ class AppShell extends LiteElement {
           <span name="call_received">@symbol-call_received</span>
           <span name="call_made">@symbol-call_made</span>
           <span name="share">@symbol-share</span>
+          <span name="content_copy">@symbol-content_copy</span>
+          <span name="square">@symbol-square</span>
         </template>
       </custom-icon-set>
       <custom-theme load-symbols="false"></custom-theme>
@@ -319,14 +361,20 @@ class AppShell extends LiteElement {
               <custom-icon icon="analytics"></custom-icon>
             </a>
           </custom-selector>
+
+          <flex-column class="extra-nav-rail">
+            <custom-divider></custom-divider>
+            <custom-icon-button icon="notifications"></custom-icon-button>
+            <custom-icon-button
+              icon="sync"
+              @click=${() => (this.syncInfo.open = !this.syncInfo.open)}></custom-icon-button>
+          </flex-column>
         </span>
 
         <flex-column class="main">
           <header>
             <flex-it></flex-it>
-            <account-select style="margin-right: 48px;"></account-select>
-
-            <notification-master></notification-master>
+            <account-select></account-select>
           </header>
           <custom-pages attr-for-selected="data-route">
             <identity-view data-route="identity"></identity-view>
@@ -343,7 +391,8 @@ class AppShell extends LiteElement {
       <login-screen></login-screen>
       <export-screen></export-screen>
 
-      <sync-info></sync-info>
+      <notification-controller></notification-controller>
+      <sync-info .open=${this.syncInfoOpen}></sync-info>
     `
   }
 }

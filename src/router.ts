@@ -76,15 +76,19 @@ export default class Router {
         if (route === 'blocks' || route === 'transactions') {
           const task = async () => {
             const blocks = await Promise.all(
-              (await client.blocks(-25)).reverse().map(async (block) => {
+              (
+                await client.blocks(-25)
+              ).map(async (block) => {
                 const message = new BlockMessage(block)
+                await message.decode()
+
                 return {
                   hash: await message.hash(),
                   ...message.decoded
                 }
               })
             )
-            this.#host.blocks = blocks.sort((a, b) => b.index - a.index)
+            this.#host.blocks = blocks.sort((a, b) => Number(b.index - a.index))
           }
           if (pubsub.subscribers?.['chain:ready']?.value) {
             await task()

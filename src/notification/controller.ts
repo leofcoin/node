@@ -6,8 +6,8 @@ import '@vandeurenglenn/lite-elements/icon.js'
 import '@vandeurenglenn/lite-elements/pane.js'
 import '@vandeurenglenn/flex-elements/row.js'
 
-@customElement('notification-master')
-export class NotificationMaster extends LitElement {
+@customElement('notification-controller')
+export class NotificationController extends LitElement {
   @property({ type: Boolean, reflect: true })
   accessor open: boolean
 
@@ -46,17 +46,16 @@ export class NotificationMaster extends LitElement {
       flex-direction: column;
       pointer-events: auto;
       z-index: 10001;
-      position: absolute;
-      right: 0;
-      top: 0;
       overflow: hidden;
       width: 100%;
       max-width: 320px;
+
       height: auto;
       box-sizing: border-box;
       color: #eee;
       pointer-events: none;
       height: 100%;
+      position: absolute;
     }
 
     :host([open]) {
@@ -94,8 +93,7 @@ export class NotificationMaster extends LitElement {
           @click=${() => {
             if (this.#list.childElementCount === 0) return
             this.open = !this.open
-          }}
-        ></custom-icon>
+          }}></custom-icon>
       </flex-row>
 
       <span class="recents">
