@@ -224,7 +224,7 @@ class AppShell extends LiteElement {
         width: calc(100% - 48px);
       }
 
-      :host([sync-animating]) custom-icon {
+      :host([sync-animating]) custom-icon-button[icon='sync'] {
         animation-name: spin;
         animation-duration: 4000ms;
         animation-iteration-count: infinite;
@@ -330,6 +330,8 @@ class AppShell extends LiteElement {
           <span name="share">@symbol-share</span>
           <span name="content_copy">@symbol-content_copy</span>
           <span name="square">@symbol-square</span>
+          <span name="check_box_outline_blank">@symbol-check_box_outline_blank</span>
+          <span name="check_box">@symbol-check_box</span>
         </template>
       </custom-icon-set>
       <custom-theme load-symbols="false"></custom-theme>
