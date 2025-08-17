@@ -190,7 +190,7 @@ export class AccountSelect extends LiteElement {
               <p>${this.selectedAccount[1]}</p>
 
               <flex-it></flex-it>
-              <address-amount address=${this.selectedAccount[1]}></address-amount>
+              <address-amount .address=${this.selectedAccount[1]}></address-amount>
             `
           : html`<busy-animation></busy-animation>`}
 
@@ -211,7 +211,7 @@ export class AccountSelect extends LiteElement {
                       <very-short-string value=${item[1]}></very-short-string>
                     </flex-row>
                     <flex-row>
-                      <address-amount address=${item[1]}></address-amount>
+                      <address-amount .address=${item[1]}></address-amount>
                       <custom-icon-button
                         icon="content_copy"
                         @click=${(e) => this.#copy(e, item[1])}></custom-icon-button>
