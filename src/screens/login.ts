@@ -400,6 +400,23 @@ export class LoginScreen extends LiteElement {
       flex-row {
         width: 100%;
       }
+
+      custom-button[type='text'] {
+        --custom-button-color: aqua;
+      }
+
+      custom-toggle-button {
+        pointer-events: none !important;
+      }
+
+      .create-item {
+        align-items: flex-end;
+      }
+
+      .create-item {
+        pointer-events: auto;
+        cursor: pointer;
+      }
     `
   ]
 
@@ -502,7 +519,7 @@ export class LoginScreen extends LiteElement {
 
           <flex-column data-route="create">
             <flex-it></flex-it>
-            <flex-row>
+            <flex-row class="create-item" @click=${() => this.#viewMnemonic()}>
               <custom-toggle-button
                 .togglers=${['check_box_outline_blank', 'check_box']}
                 .active=${this.mnemonicShowed ? 1 : 0}
@@ -514,7 +531,7 @@ export class LoginScreen extends LiteElement {
                 popovertarget="dialog"></custom-button>
             </flex-row>
 
-            <flex-row>
+            <flex-row class="create-item" @click=${() => this.#viewPassword()}>
               <custom-toggle-button
                 .togglers=${['check_box_outline_blank', 'check_box']}
                 .active=${this.passwordShowed ? 1 : 0}

@@ -61,7 +61,7 @@ class AppShell extends LiteElement {
       if (this.totalResolved === 0) return
       if (this.syncAnimating === true) return
       this.syncAnimating = true
-      if (this.totalResolvedtimeout) clearTimeout(this.totalResolvedtimeout)
+      if (this.totalResolvedtimeout) return
       this.totalResolvedtimeout = setTimeout(() => {
         this.syncAnimating = false
       }, 1000)
