@@ -1,38 +1,41 @@
-import { css, html, LitElement } from 'lit'
-import { map } from 'lit/directives/map.js'
+import { css, html, LiteElement, property } from '@vandeurenglenn/lite'
 import { formatUnits } from '@leofcoin/utils'
+import { state } from '../state/state.js'
 
-export default customElements.define(
-  'address-amount',
-  class AddressAmount extends LitElement {
-    #address
+export class AddressAmount extends LiteElement {
+  @property({ type: String, reflect: true }) accessor address
+  @property({ type: String, reflect: true }) accessor amount
 
-    static properties = {
-      address: {
-        type: String,
-        reflect: true
-      },
-      amount: {
-        type: Number
+  onChange(propertyKey: string, value: any): void {
+    console.log({ propertyKey, value })
+
+    propertyKey === 'address' && value && this.#updateAmount()
+  }
+
+  async #updateAmount() {
+    console.log(state.ready)
+
+    await state.ready
+
+    console.log(state.ready)
+
+    let amount
+    try {
+      // todo amount should update dynamically
+      amount = await chain.balanceOf(this.address)
+    } catch (error) {
+      console.error('Error fetching balance, falling back to remote:', error)
+      try {
+        amount = await globalThis.client.balanceOf(this.address, false)
+      } catch (error) {
+        console.error('Error fetching balance:', error)
       }
     }
+    this.amount = formatUnits(BigInt(amount)).toLocaleString()
+  }
 
-    set address(value) {
-      this.#address = value
-      if (value) this.#updateAmount()
-    }
-    constructor() {
-      super()
-    }
-
-    async #updateAmount() {
-      const amount = await globalThis.client.balanceOf(this.#address, false)
-      console.log({ amount })
-
-      this.amount = formatUnits(BigInt(amount)).toLocaleString()
-    }
-
-    static styles = css`
+  static styles = [
+    css`
       :host {
         display: flex;
         box-sizing: border-box;
@@ -58,9 +61,11 @@ export default customElements.define(
         min-width: 60px;
       }
     `
+  ]
 
-    render() {
-      return html`<p>${this.amount}</p> `
-    }
+  render() {
+    return html`<p>${this.amount}</p> `
   }
-)
+}
+
+customElements.define('address-amount', AddressAmount)
