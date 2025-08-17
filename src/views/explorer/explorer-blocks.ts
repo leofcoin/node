@@ -5,14 +5,14 @@ import '../../elements/latest.js'
 export class ExplorerBlocks extends LiteElement {
   @property({ consumes: true }) accessor blocks
 
-  #addBlock(block) {
+  #addBlock = (block) => {
     console.log({ 'added-block': block })
     this.blocks.push(block)
   }
 
   firstRender(): void {
-    client.pubsub.subscribe('add-block', this.#addBlock.bind(this))
-    client.pubsub.subscribe('block-processed', this.#addBlock.bind(this))
+    client.pubsub.subscribe('add-block', this.#addBlock)
+    client.pubsub.subscribe('block-processed', this.#addBlock)
   }
 
   render() {
