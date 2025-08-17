@@ -1,4 +1,5 @@
-import { html, css, LitElement } from 'lit'
+import { html, css, LiteElement, property, customElement, map } from '@vandeurenglenn/lite'
+import { render } from 'lit-html'
 import generateAccount from '@leofcoin/generate-account'
 import IdentityController from '../controllers/identity.js'
 import '@material/web/button/elevated-button.js'
@@ -7,30 +8,44 @@ import QrScanner from 'qr-scanner'
 import { decrypt, encrypt } from '@leofcoin/identity-utils'
 import base58 from '@vandeurenglenn/base58'
 import type Client from '@leofcoin/endpoint-clients/direct'
-import { customElement, property, state } from 'lit/decorators.js'
 import type Chain from '@leofcoin/chain/chain'
 import Router from '../router.js'
 import './../elements/hero.js'
 import '@vandeurenglenn/lite-elements/button.js'
+import '@vandeurenglenn/lite-elements/toggle-button.js'
+import '@vandeurenglenn/lite-elements/tabs.js'
+import '@vandeurenglenn/lite-elements/pages.js'
+import '@vandeurenglenn/lite-elements/tab.js'
+import '@vandeurenglenn/flex-elements/wrap-between.js'
 
 declare global {
   var client: Client
   var chain: Chain
 }
 @customElement('login-screen')
-export class LoginScreen extends LitElement {
+export class LoginScreen extends LiteElement {
   @property({ type: Boolean, reflect: true })
   accessor shown: boolean
-  @state()
+  @property()
   accessor mnemonic: string
   @property({ type: Boolean })
   accessor hasWallet: boolean
-  @state()
+  @property()
   accessor importing: boolean
   @property()
   accessor headline
   @property()
   accessor subline
+
+  @property()
+  accessor decodedMnemonic: string
+  @property({ type: Boolean })
+  accessor mnemonicShowed: boolean
+
+  @property({ type: Boolean })
+  accessor passwordShowed: boolean
+
+  #viewPassword: () => void
 
   async getIdentity() {
     if (!globalThis.walletStore) {
@@ -156,18 +171,22 @@ export class LoginScreen extends LitElement {
   }
 
   #iUnderstand = () => {
-    this.removeAttribute('shown')
+    this.mnemonicShowed && this.passwordShowed && this.removeAttribute('shown')
   }
 
   async #handleCreate(password) {
     const wallet = await this.#handleBeforeLogin(password)
+    console.log({ wallet })
+
     this.headline = 'Created Wallet!'
     this.subline = 'Make sure to backup your password and mnemonic'
     this.#pages.select('create')
     try {
       await globalThis.identityController.unlock(password)
       await this.#handleAfterLogin(wallet)
-
+      this.mnemonic = wallet.identity.mnemonic
+      this.decodedMnemonic = await decrypt(password, base58.decode(wallet.identity.mnemonic))
+      this.#viewPassword = () => this.#viewPasswordMethod(password)
       this.loadChain(password)
     } catch (e) {
       console.error(e)
@@ -308,72 +327,169 @@ export class LoginScreen extends LitElement {
         type="outlined"
         label="login"
         data-route-action="login"
-        style="width: 100%; max-width: 190px; margin-bottom: 12px;"
-      ></custom-button>
+        style="width: 100%; max-width: 190px; margin-bottom: 12px;"></custom-button>
     `
   }
 
-  static styles = css`
-    :host {
-      display: flex;
-      flex-direction: column;
-      inset: 0;
-      position: absolute;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      opacity: 0;
-      background: #1116;
-      transition: 0.25s;
-      z-index: -1;
+  static styles = [
+    css`
+      :host {
+        display: flex;
+        flex-direction: column;
+        inset: 0;
+        position: absolute;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        opacity: 0;
+        background: #1116;
+        transition: 0.25s;
+        z-index: -1;
+      }
+
+      :host([shown]) {
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 1002;
+        transition: 0.25s;
+      }
+
+      input,
+      button {
+        border-color: white;
+        padding: 10px;
+        border-radius: 12px;
+        box-sizing: border-box;
+        pointer-events: auto;
+      }
+
+      input {
+        font-size: 16px;
+      }
+
+      button {
+        background: #12b8e4a3;
+        color: white;
+        border-color: white;
+        background: transparent;
+        padding: 10px 20px;
+      }
+
+      button:hover {
+        background: var(--secondary-background);
+        transition: 0.25s;
+      }
+
+      custom-pages {
+        width: 100%;
+        height: 100%;
+      }
+
+      span[data-route='login'] {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+      }
+
+      [data-route='create'] {
+        align-items: flex-end;
+      }
+
+      flex-row {
+        width: 100%;
+      }
+    `
+  ]
+
+  #viewMnemonic() {
+    const dialog = document.createElement('dialog')
+    document.body.appendChild(dialog)
+    dialog.innerHTML = `
+      <custom-tabs>
+        <custom-tab type="round" data-route="json">JSON</custom-tab>
+        <custom-tab type="round" data-route="string">String</custom-tab>
+        <custom-tab type="round" data-route="encrypted">Encrypted</custom-tab>
+      </custom-tabs>
+      <custom-pages attr-for-selected="data-route">
+        <flex-wrap-between data-route="json">
+          ${map(
+            this.decodedMnemonic?.split(' '),
+            (word, index) =>
+              `<flex-row class="word">
+                <strong>${index + 1}</strong>
+                <p>${word}</p></flex-row
+              >`
+          ).join('')}
+        </flex-wrap-between>
+        <flex-column data-route="string">
+          <p>${this.decodedMnemonic}</p>
+        </flex-column>
+
+        <flex-column data-route="encrypted">
+          <h2>Encrypted</h2>
+          <p>This is the encrypted version of your mnemonic, requiring your password to unlock.</p>
+          <p>${this.mnemonic}</p>
+        </flex-column>
+      </custom-pages>
+
+      <custom-button label="scroll down"></custom-button>
+    `
+
+    dialog.querySelector('custom-pages')
+    dialog.setAttribute('id', 'dialog')
+    dialog.setAttribute('popover', '')
+    dialog.showPopover()
+    dialog.dataset.id = crypto.randomUUID()
+
+    const container = dialog.querySelector('custom-pages').querySelector('flex-wrap-between')
+    const viewportHeight = container.getBoundingClientRect().height
+    const ondialogClick = () => {
+      if (container.scrollTop + viewportHeight === container.scrollHeight) {
+        dialog.close()
+        this.mnemonicShowed = true
+        dialog.removeEventListener('click', ondialogClick)
+        dialog.remove()
+      } else {
+        container.scrollBy({
+          top: viewportHeight - 8,
+          behavior: 'smooth'
+        })
+
+        container.onscrollend = () => {
+          if (container.scrollTop + viewportHeight === container.scrollHeight) {
+            dialog.querySelector('custom-button').label = 'confirm'
+          }
+        }
+      }
     }
 
-    :host([shown]) {
-      opacity: 1;
-      pointer-events: auto;
-      z-index: 1002;
-      transition: 0.25s;
+    dialog.querySelector('custom-button').addEventListener('click', ondialogClick)
+  }
+
+  #viewPasswordMethod = (password: string) => {
+    const dialog = document.createElement('dialog')
+    document.body.appendChild(dialog)
+    dialog.innerHTML = `
+        <p>${password}</p>
+        <custom-button label="confirm"></custom-button>
+      `
+
+    dialog.setAttribute('id', 'dialog')
+    dialog.setAttribute('popover', '')
+    dialog.showPopover()
+    dialog.dataset.id = crypto.randomUUID()
+
+    const ondialogClick = () => {
+      dialog.close()
+      this.passwordShowed = true
+      dialog.removeEventListener('click', ondialogClick)
+      dialog.remove()
     }
 
-    input,
-    button {
-      border-color: white;
-      padding: 10px;
-      border-radius: 12px;
-      box-sizing: border-box;
-      pointer-events: auto;
-    }
-
-    input {
-      font-size: 16px;
-    }
-
-    button {
-      background: #12b8e4a3;
-      color: white;
-      border-color: white;
-      background: transparent;
-      padding: 10px 20px;
-    }
-
-    button:hover {
-      background: var(--secondary-background);
-      transition: 0.25s;
-    }
-
-    custom-pages {
-      width: 100%;
-      height: 100%;
-    }
-
-    span[data-route='login'] {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      align-items: center;
-      justify-content: center;
-    }
-  `
+    dialog.querySelector('custom-button').addEventListener('click', ondialogClick)
+  }
 
   render() {
     return html`
@@ -385,10 +501,36 @@ export class LoginScreen extends LitElement {
           </flex-column>
 
           <flex-column data-route="create">
-            <flex-it flex="2"></flex-it>
-            ${this.mnemonic}
+            <flex-it></flex-it>
+            <flex-row>
+              <custom-toggle-button
+                .togglers=${['check_box_outline_blank', 'check_box']}
+                .active=${this.mnemonicShowed ? 1 : 0}
+                @active=${({ detail }) => (this.mnemonicShowed = detail === 1)}></custom-toggle-button>
 
-            <custom-button type="outlined" label="I Understand" @click=${this.#iUnderstand}></custom-button>
+              <custom-button
+                @click=${() => this.#viewMnemonic()}
+                label="view mnemonic"
+                popovertarget="dialog"></custom-button>
+            </flex-row>
+
+            <flex-row>
+              <custom-toggle-button
+                .togglers=${['check_box_outline_blank', 'check_box']}
+                .active=${this.passwordShowed ? 1 : 0}
+                @active=${({ detail }) => (this.passwordShowed = detail === 1)}></custom-toggle-button>
+
+              <custom-button
+                @click=${() => this.#viewPassword()}
+                label="view password"
+                popovertarget="dialog"></custom-button>
+            </flex-row>
+            <flex-it></flex-it>
+            <custom-button
+              type="outlined"
+              label="I Understand"
+              @click=${this.#iUnderstand}
+              ?disabled=${!this.mnemonicShowed || !this.passwordShowed}></custom-button>
           </flex-column>
 
           <flex-column data-route="import">
