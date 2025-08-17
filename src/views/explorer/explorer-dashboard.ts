@@ -1,20 +1,17 @@
 import { html, LiteElement, property } from '@vandeurenglenn/lite'
 import { map } from 'lit/directives/map.js'
-import '../../elements/latest.js'
 import '../../elements/explorer/info-container.js'
 import { formatBytes, formatUnits } from '@leofcoin/utils'
 import '@vandeurenglenn/flex-elements/wrap-around.js'
 import { BlockMessage } from '@leofcoin/messages'
+import { state } from '../../state/state.js'
 
 export default customElements.define(
   'explorer-dashboard',
   class ExplorerDashboard extends LiteElement {
     @property() accessor items: { title: string; items: [] }[]
 
-    #blocks = []
-    #transactions = []
-
-    async updateInfo() {
+    updateInfo = async () => {
       const lookupValidators = await client.lookup('LeofcoinValidators')
 
       const validators = await client.staticCall(lookupValidators.address, 'validators')
@@ -138,43 +135,14 @@ export default customElements.define(
       ]
     }
 
-    async select(selected) {
-      if (!customElements.get(`${selected}-view`)) await import(`./${selected}.js`)
-      this.selected = selected
-      this.shadowRoot.querySelector('custom-pages').select(selected)
+    async beforeRender() {
+      await state.ready
     }
 
-    setInfo(hash, index) {
-      console.log(hash, index)
-      this.shadowRoot.querySelector('custom-pages').querySelector('.custom-selected').updateInfo(hash, index)
-    }
-
-    _addBlock(block) {
-      console.log(block)
-      if (block.transactions.length > 25) {
-        this.#transactions = block.transactions.slice(-25)
-      } else {
-        this.#transactions = [...block.transactions, ...this.#transactions.slice(-(block.transactions.length - 1))]
-      }
-
-      this.requestRender()
-    }
-
-    async connectedCallback() {
-      this.#blocks = await client.blocks(-25)
-      let i = 0
-      while (this.#transactions.length < 25 && this.#blocks.length - 1 >= i) {
-        this.#blocks[i] = new BlockMessage(new Uint8Array(Object.values(this.#blocks[i]))).decoded
-        if (this.#blocks[i].transactions.length < 25)
-          this.#blocks[i].transactions.slice(0, this.#blocks[i].transactions.length - 1)
-        this.#transactions = [...this.#transactions, ...this.#blocks[i].transactions.slice(-25)]
-        i++
-      }
-
-      this.updateInfo()
-
-      client.pubsub.subscribe('add-block', this._addBlock)
-      client.pubsub.subscribe('block-processed', this._addBlock)
+    async firstRender(): Promise<void> {
+      pubsub.subscribe('chain:ready', this.updateInfo)
+      client.pubsub.subscribe('add-block', this.updateInfo)
+      client.pubsub.subscribe('block-processed', this.updateInfo)
     }
 
     render() {
