@@ -19,6 +19,7 @@ export class LatestElement extends LiteElement {
   }
 
   get #blockTemplate() {
+    if (!this.value) return
     let total = BigInt(0)
 
     for (const tx of this.value.transactions) {
@@ -52,9 +53,9 @@ export class LatestElement extends LiteElement {
             )}
           </span>
         </flex-column>
-        <flex-it></flex-it>
       </flex-row>
-      <div class="total">${Number(total).toLocaleString()}</div>
+
+      <div class="total"><span>${total}</span></div>
       <!-- <strong>amount</strong> -->
     `
   }
@@ -67,7 +68,7 @@ export class LatestElement extends LiteElement {
     else if (this.value.method === 'mint' || this.value.method === 'burn') {
       amount = this.value.params[1]
     }
-    amount = formatUnits(amount)
+    amount = formatUnits(amount).toLocaleString()
     return html`
       <flex-column class="first-column">
         <a class="height">${Number(this.value.blockIndex) + 1}</a>
@@ -85,9 +86,8 @@ export class LatestElement extends LiteElement {
             <strong>${this.value.to.slice(0, 8)}...${this.value.to.slice(-8)}</strong>
           </flex-row>
         </flex-column>
-        <flex-it></flex-it>
       </flex-row>
-      <div class="total">${Number(amount)}</div>
+      <div class="total"><span>${amount}</span></div>
       <!-- <strong>amount</strong> -->
     `
   }
@@ -115,6 +115,7 @@ export class LatestElement extends LiteElement {
           background: var(--secondary-background);
 
           border-radius: 24px;
+          align-items: space-between;
         }
 
         flex-row {
@@ -148,6 +149,16 @@ export class LatestElement extends LiteElement {
           box-sizing: border-box;
           border-radius: 24px;
           width: fit-content;
+        }
+
+        .total span {
+          font-weight: 500;
+          font-size: 14px;
+          text-align: center;
+          text-transform: uppercase;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       </style>
       ${this.type === 'block' ? this.#blockTemplate : this.#transactionTemplate}
