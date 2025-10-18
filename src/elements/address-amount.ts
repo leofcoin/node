@@ -7,22 +7,21 @@ export class AddressAmount extends LiteElement {
   @property({ type: String, reflect: true }) accessor amount
 
   onChange(propertyKey: string, value: any): void {
-    console.log({ propertyKey, value })
-
-    propertyKey === 'address' && value && this.#updateAmount()
+    propertyKey === 'address' && value !== undefined && this.#updateAmount()
   }
 
-  async #updateAmount() {
-    console.log(state.ready)
+  #updateAmount = async () => {
+    console.log(state)
 
     await state.ready
-
-    console.log(state.ready)
+    console.log(state)
+    console.log(chain)
 
     let amount
     try {
       // todo amount should update dynamically
       amount = await chain.balanceOf(this.address)
+      console.log({ amount })
     } catch (error) {
       console.error('Error fetching balance, falling back to remote:', error)
       try {

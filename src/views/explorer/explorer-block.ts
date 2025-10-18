@@ -2,16 +2,19 @@ import { css, html, LiteElement, customElement, property } from '@vandeurenglenn
 import type { StyleList } from '@vandeurenglenn/lite/element'
 import '../../elements/latest.js'
 import '../../elements/explorer/info-container.js'
-import { formatBytes, formatUnits } from '@leofcoin/utils'
+import { formatBytes, formatUnits, jsonStringifyBigInt } from '@leofcoin/utils'
 import '../../elements/time/ago.js'
 import '../../animations/busy.js'
 import '../../elements/shorten-string.js'
 import '../../elements/explorer/property-info.js'
+import { BlockMessage } from '@leofcoin/messages'
 
 @customElement('explorer-block')
 export class ExplorerBlock extends LiteElement {
-  @property({ type: Object, consumer: true })
+  @property({ type: Object })
   accessor block
+
+  @property({ type: String }) accessor selected: string
 
   @property()
   accessor size: number
@@ -25,6 +28,13 @@ export class ExplorerBlock extends LiteElement {
 
   #goTransactions() {
     location.hash = `#!/explorer?blockTransactions=${this.block.hash}&index=${this.block.index}`
+  }
+
+  async onChange(propertyKey: string, value: any): Promise<void> {
+    if (propertyKey === 'selected') {
+      const block = await globalThis.peernet.get(value)
+      this.block = new BlockMessage(block).decode()
+    }
   }
 
   render() {
@@ -54,12 +64,6 @@ export class ExplorerBlock extends LiteElement {
           <span>${this.block.index}</span>
         </property-info>
 
-        <!-- <property-info>
-    <h4>height</h4>
-    <flex-it></flex-it>
-    <span>${this.block.index + 1}</span>
-  </property-info> -->
-
         <property-info>
           <h4>timestamp</h4>
           <flex-it></flex-it>
@@ -85,7 +89,11 @@ export class ExplorerBlock extends LiteElement {
           <h4>size</h4>
           <flex-it></flex-it>
 
-          <span>${formatBytes(Number(new TextEncoder().encode(JSON.stringify(this.block)).byteLength))}</span>
+          <span
+            >${formatBytes(
+              Number(new TextEncoder().encode(JSON.stringify(this.block, jsonStringifyBigInt)).byteLength)
+            )}</span
+          >
         </property-info>
 
         <property-info>

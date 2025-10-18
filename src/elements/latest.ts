@@ -8,14 +8,14 @@ export class LatestElement extends LiteElement {
   @property({ type: String }) accessor type: string
 
   firstRender(): void {
-    this.addEventListener('click', this.#click.bind(this))
+    this.addListener('click', this.#click.bind(this))
   }
 
   #click() {
     if (this.type === 'block')
-      location.hash = `#!/explorer/${this.type}?${this.type}=${this.value.hash}&index=${this.value.index}`
+      location.hash = `#!/explorer/${this.type}?selected=${this.value.hash}&index=${this.value.index}`
     if (this.type === 'transaction')
-      location.hash = `#!/explorer?${this.type}=${this.value.hash}&index=${this.value.index}&blockIndex=${this.value.blockIndex}`
+      location.hash = `#!/explorer/${this.type}?selected=${this.value.hash}&blockIndex=${this.value.blockIndex}`
   }
 
   get #blockTemplate() {
@@ -31,7 +31,7 @@ export class LatestElement extends LiteElement {
     total = formatUnits(total).toLocaleString()
     return html`
       <flex-column class="first-column">
-        <a class="height" href="#!/explorer?block=${this.value.hash}">${Number(this.value.index) + 1}</a>
+        <a class="height">${Number(this.value.index) + 1}</a>
         <time-ago value=${this.value.timestamp}></time-ago>
       </flex-column>
 
@@ -48,7 +48,7 @@ export class LatestElement extends LiteElement {
               (item: any) => html`
                 <strong>${this.value.validators.length}</strong>
                 <span>${this.value.validators.length > 1 ? 'validators' : 'validator'}</span>
-                <a href="#!/explorer?address=${item.address}" class="validator">${item.address.slice(-7)}</a>
+                <a href="#!/explorer/account?address=${item.address}" class="validator">${item.address.slice(-7)}</a>
               `
             )}
           </span>

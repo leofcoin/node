@@ -22,8 +22,13 @@ import Router from './router.js'
 import { CustomPages } from '@vandeurenglenn/lite-elements/pages.js'
 
 import { LiteElement, property, query, css, html, customElement } from '@vandeurenglenn/lite'
+import { NotificationController } from './notification/controller.js'
 
 globalThis.pubsub = globalThis.pubsub || new Pubsub(true)
+
+declare global {
+  var walletStore: Storage
+}
 
 @customElement('app-shell')
 class AppShell extends LiteElement {
@@ -43,10 +48,10 @@ class AppShell extends LiteElement {
 
   router: Router
 
-  @property({ provider: true })
+  @property({ provides: true })
   accessor block
 
-  @property({ provider: true })
+  @property({ provides: true })
   accessor wallet
 
   @property({ type: Boolean, reflect: true, attribute: 'sync-animating' })
@@ -55,13 +60,10 @@ class AppShell extends LiteElement {
   totalResolvedtimeout: number
 
   onChange(name) {
-    console.log({ name })
-
     if (name === 'totalResolved' || name === 'totalLoaded') {
       if (this.totalResolved === 0) return
-      if (this.syncAnimating === true) return
       this.syncAnimating = true
-      if (this.totalResolvedtimeout) return
+      if (this.totalResolvedtimeout) clearTimeout(this.totalResolvedtimeout)
       this.totalResolvedtimeout = setTimeout(() => {
         this.syncAnimating = false
       }, 1000)
@@ -105,12 +107,16 @@ class AppShell extends LiteElement {
   @query('sync-info')
   accessor syncInfo
 
+  @query('notification-controller')
+  accessor notifications: NotificationController
+
   @property({ type: Boolean, reflect: true, attribute: 'is-desktop' })
   accessor isDesktop: boolean = false
 
   #matchMedia = ({ matches }) => {
     this.isDesktop = matches
     document.dispatchEvent(new CustomEvent('is-desktop', { detail: matches }))
+    return matches
   }
 
   async connectedCallback() {
@@ -120,8 +126,8 @@ class AppShell extends LiteElement {
     this.#matchMedia(matchMedia)
     matchMedia.onchange = this.#matchMedia(matchMedia)
 
-    this.peersConnected = 0
     pubsub.subscribe('lastBlock', (block) => (this.lastBlockIndex = block.index))
+    // todo check if our address is in the block
     pubsub.subscribe('block-resolved', (block) => (this.totalResolved += 1))
     pubsub.subscribe('block-loaded', (block) => (this.totalLoaded += 1))
     try {
@@ -366,7 +372,9 @@ class AppShell extends LiteElement {
 
           <flex-column class="extra-nav-rail">
             <custom-divider></custom-divider>
-            <custom-icon-button icon="notifications"></custom-icon-button>
+            <custom-icon-button
+              icon="notifications"
+              @click=${() => (this.notifications.open = !this.notifications.open)}></custom-icon-button>
             <custom-icon-button
               icon="sync"
               @click=${() => (this.syncInfo.open = !this.syncInfo.open)}></custom-icon-button>
@@ -394,7 +402,7 @@ class AppShell extends LiteElement {
       <export-screen></export-screen>
 
       <notification-controller></notification-controller>
-      <sync-info .open=${this.syncInfoOpen}></sync-info>
+      <sync-info></sync-info>
     `
   }
 }

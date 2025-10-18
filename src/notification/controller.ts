@@ -42,20 +42,7 @@ export class NotificationController extends LitElement {
 
   static styles = css`
     :host {
-      display: flex;
-      flex-direction: column;
-      pointer-events: auto;
-      z-index: 10001;
-      overflow: hidden;
-      width: 100%;
-      max-width: 320px;
-
-      height: auto;
-      box-sizing: border-box;
-      color: #eee;
-      pointer-events: none;
-      height: 100%;
-      position: absolute;
+      display: contents;
     }
 
     :host([open]) {
@@ -64,7 +51,7 @@ export class NotificationController extends LitElement {
 
     .recents {
       display: block;
-      position: relative;
+      position: absolute;
       top: 12px;
       right: 12px;
       width: 100%;
@@ -82,25 +69,29 @@ export class NotificationController extends LitElement {
     custom-icon {
       pointer-events: auto;
     }
+
+    custom-pane {
+      bottom: 0;
+      position: absolute;
+      max-height: 75%;
+      left: 50%;
+      max-width: 1200px;
+      color: #eee;
+      border-radius: var(--md-sys-shape-corner-large-top);
+      transform: translateX(-50%) translateY(100%);
+    }
+    custom-pane[open] {
+      transform: translateX(-50%) translateY(0);
+    }
   `
 
   render() {
     return html`
-      <flex-row style="margin-top: 12px;margin-right: 12px;">
-        <flex-it></flex-it>
-        <custom-icon
-          icon="notifications"
-          @click=${() => {
-            if (this.#list.childElementCount === 0) return
-            this.open = !this.open
-          }}></custom-icon>
-      </flex-row>
-
       <span class="recents">
         <slot></slot>
       </span>
 
-      <custom-pane ?open=${this.open} right top>
+      <custom-pane ?open=${this.open} left>
         <span slot="header"></span>
         <flex-column class="list" slot="content"> </flex-column>
 

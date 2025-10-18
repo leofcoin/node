@@ -6,6 +6,6 @@ export const state = {
   })
 }
 
-globalThis.pubsub.subscribe('state:ready', () => {
-  _state.readyResolve(true)
+globalThis.pubsub.subscribe('node:ready', (value) => {
+  value && _state.readyResolve(true)
 })

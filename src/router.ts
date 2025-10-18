@@ -81,6 +81,8 @@ export default class Router {
               ).map(async (block) => {
                 const message = new BlockMessage(block)
                 await message.decode()
+                console.log(message.decoded)
+                console.log(await message.hash())
 
                 return {
                   hash: await message.hash(),
@@ -93,7 +95,7 @@ export default class Router {
           if (pubsub.subscribers?.['chain:ready']?.value) {
             await task()
           } else {
-            pubsub.subscribe('chain:ready', task)
+            pubsub.subscribe('node:ready', task)
           }
         }
       }

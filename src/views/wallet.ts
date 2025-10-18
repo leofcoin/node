@@ -8,6 +8,9 @@ import '@vandeurenglenn/lite-elements/tabs.js'
 import '@vandeurenglenn/lite-elements/tab.js'
 import { WalletPay } from './wallet/wallet-pay.js'
 import Router from '../router.js'
+import { NotificationController } from '../notification/controller.js'
+import AppShell from '../shell.js'
+import shell from '../shell.js'
 
 @customElement('wallet-view')
 export class WalletView extends LiteElement {
@@ -21,6 +24,8 @@ export class WalletView extends LiteElement {
   accessor wallet
 
   @query('wallet-send') accessor walletSend
+  shell = document.querySelector('app-shell') as AppShell
+  notificationController = this.shell.notificationController as NotificationController
 
   get #amount() {
     return this.walletSend.shadowRoot.querySelector('.amount') as HTMLInputElement
@@ -83,10 +88,34 @@ export class WalletView extends LiteElement {
     }
     const transaction = await signTransaction(rawTransaction, globalThis.identityController)
     console.log(transaction)
+    console.log('permission', Notification.permission)
     const transactionEvent = await client.sendTransaction(transaction)
 
+    this.notificationController.createNotification({
+      title: 'Transaction Sent',
+      message: `Transaction hash: ${transactionEvent.hash}`
+    })
+    if (Notification.permission !== 'granted') await Notification.requestPermission()
+
+    console.log('permission', Notification.permission)
+
+    if (Notification.permission === 'granted') {
+      const notification = new Notification('Transaction Sent', {
+        body: `Transaction hash: ${transactionEvent.hash}`
+      })
+    }
     console.log(transactionEvent)
-    this._cancel
+    await transactionEvent.wait
+    this.notificationController.createNotification({
+      title: 'Transaction Completed',
+      message: `Transaction hash: ${transactionEvent.hash}`
+    })
+    if (Notification.permission === 'granted') {
+      const notification = new Notification('Transaction Completed', {
+        body: `Transaction hash: ${transactionEvent.hash}`
+      })
+    }
+    this._cancel()
   }
 
   connectedCallback(): void {
@@ -136,8 +165,7 @@ export class WalletView extends LiteElement {
           round
           class="wallet-nav"
           attr-for-selected="data-route"
-          @selected=${(event: CustomEvent) => (location.hash = Router.bang(`wallet/${event.detail}`))}
-        >
+          @selected=${(event: CustomEvent) => (location.hash = Router.bang(`wallet/${event.detail}`))}>
           <custom-tab title="send" data-route="send">
             <custom-icon icon="call_made"></custom-icon>
           </custom-tab>
