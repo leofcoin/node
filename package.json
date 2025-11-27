@@ -35,11 +35,11 @@
     "websocket": "^1.0.35"
   },
   "dependencies": {
-    "@leofcoin/chain": "^1.7.117",
+    "@leofcoin/chain": "^1.7.118",
     "@leofcoin/codec-format-interface": "^1.7.14",
     "@leofcoin/endpoint-clients": "^0.3.15",
     "@leofcoin/identity-utils": "^1.0.2",
-    "@leofcoin/launch-chain": "^0.4.12",
+    "@leofcoin/launch-chain": "^0.4.13",
     "@leofcoin/messages": "^1.4.40",
     "@leofcoin/multi-wallet": "^3.1.8",
     "@leofcoin/storage": "^3.5.38",
