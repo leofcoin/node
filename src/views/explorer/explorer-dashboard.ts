@@ -5,17 +5,65 @@ import { formatBytes, formatUnits } from '@leofcoin/utils'
 import '@vandeurenglenn/flex-elements/wrap-around.js'
 import { BlockMessage } from '@leofcoin/messages'
 import { state } from '../../state/state.js'
+import './../../elements/explorer/dashboard-section.js'
 
 export default customElements.define(
   'explorer-dashboard',
   class ExplorerDashboard extends LiteElement {
     @property() accessor items: { title: string; items: [] }[]
 
+    @property() accessor validators: any[]
+
     updateInfo = async () => {
+      const promises = []
+
       const lookupValidators = await client.lookup('LeofcoinValidators')
 
-      const validators = await client.staticCall(lookupValidators.address, 'validators')
       const lookupFactory = await client.lookup('LeofcoinContractFactory')
+      promises.push(await client.staticCall(lookupValidators.address, 'validators', {}))
+      promises.push(BigInt(await client.nativeTransfers()).toString())
+      promises.push(BigInt(await client.nativeBurns()).toString())
+      promises.push(BigInt(await client.nativeMints()).toString())
+      promises.push(BigInt(await client.nativeCalls()).toString())
+      promises.push(BigInt(await client.totalContracts()).toString())
+      promises.push(BigInt(await client.staticCall(lookupFactory.address, 'totalContracts')).toString())
+      promises.push(await client.lastBlockHeight())
+      promises.push(BigInt(await client.totalTransactions()).toString())
+      promises.push(formatBytes(await client.totalSize()))
+      promises.push(await client.transactionsInPool())
+      promises.push(formatBytes(await client.transactionPoolSize()))
+      promises.push((await client.peers()).length)
+
+      // execute all promises in parallel for performance reasons
+
+      await Promise.all(promises)
+      this.validators = promises[0]
+
+      // transactions
+      this.nativeTransfers = promises[1]
+      this.nativeBurns = promises[2]
+      this.nativeMints = promises[3]
+      this.nativeCalls = promises[4]
+      this.totalContracts = promises[5]
+      this.registeredContracts = promises[6]
+
+      // chain
+      this.lastBlockHeight = promises[7]
+      this.totalTransactions = promises[8]
+      this.totalSize = promises[9]
+
+      // pool
+      this.transactionsInPool = promises[10]
+      this.transactionPoolSize = promises[11]
+
+      // network
+      this.peers = promises[12]
+      // validators
+      this.totalValidators = Object.keys(this.validators).length
+      this.onlineValidators = Object.values(this.validators).filter(
+        ({ lastSeen }) => lastSeen - new Date().getTime() < 60_000
+      ).length
+
       const tpeses = []
 
       let blocks = await client.blocks(-128)
@@ -39,101 +87,23 @@ export default customElements.define(
         return arr.length % 2 !== 0 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2
       }
 
-      const tps = median(tpeses)
-
-      this.items = [
-        {
-          title: 'transactions',
-          items: [
-            {
-              title: 'transfers',
-              value: BigInt(await client.nativeTransfers()).toString()
-            },
-            {
-              title: 'burns',
-              value: BigInt(await client.nativeBurns()).toString()
-            },
-            {
-              title: 'mints',
-              value: BigInt(await client.nativeMints()).toString()
-            }
-          ]
-        },
-        {
-          title: 'validators',
-          items: [
-            {
-              title: 'total',
-              value: Object.keys(validators).length
-            },
-            {
-              title: 'online',
-              value: Object.values(validators).filter(({ lastSeen }) => lastSeen - new Date().getTime() < 60_000).length
-            }
-          ]
-        },
-        {
-          title: 'contracts',
-          items: [
-            {
-              title: 'total',
-              value: await client.totalContracts()
-            },
-            {
-              title: 'registered',
-              value: BigInt(await client.staticCall(lookupFactory.address, 'totalContracts')).toString()
-            },
-            {
-              title: 'native calls',
-              value: BigInt(await client.nativeCalls()).toString()
-            }
-          ]
-        },
-        {
-          title: 'chain',
-          items: [
-            {
-              title: 'blocks',
-              value: await client.lastBlockHeight()
-            },
-            {
-              title: 'transactions',
-              value: BigInt(await client.totalTransactions()).toString()
-            },
-            {
-              title: 'size',
-              value: formatBytes(await client.totalSize())
-            }
-          ]
-        },
-        {
-          title: 'pool',
-          items: [
-            {
-              title: 'transactions',
-              value: await client.transactionsInPool()
-            },
-            {
-              title: 'size',
-              value: formatBytes(await client.transactionPoolSize())
-            }
-          ]
-        },
-        {
-          title: 'network',
-          items: [
-            {
-              title: 'tps',
-              value: tps
-            },
-            {
-              title: 'peers',
-              value: (await client.peers()).length
-            }
-          ]
-        }
-      ]
+      this.tps = median(tpeses)
     }
+    @property({ type: Number }) accessor onlineValidators: number
+    @property({ type: Number }) accessor totalValidators: number
+    @property({ type: String }) accessor nativeMints: string
+    @property({ type: String }) accessor nativeBurns: string
+    @property({ type: String }) accessor nativeTransfers: string
+    @property({ type: Number }) accessor totalContracts: number
+    @property({ type: String }) accessor registeredContracts: string
+    @property({ type: String }) accessor nativeCalls: string
+    @property({ type: Number }) accessor lastBlockHeight: number
+    @property({ type: String }) accessor totalTransactions: string
+    @property({ type: String }) accessor totalSize: string
+    @property({ type: Number }) accessor transactionsInPool: number
+    @property({ type: String }) accessor transactionPoolSize: string
+    @property({ type: Number }) accessor peers: number
+    @property({ type: Number }) accessor tps: number
 
     async beforeRender() {
       await state.ready
@@ -154,16 +124,9 @@ export default customElements.define(
             width: 100%;
             height: 100%;
             align-items: center;
-            justify-content: center;
             overflow-y: auto;
             padding: 12px;
             box-sizing: border-box;
-          }
-
-          hero-element {
-            height: auto;
-            max-height: none;
-            max-width: 720px;
           }
 
           flex-wrap-evenly {
@@ -202,15 +165,97 @@ export default customElements.define(
             }
           }
         </style>
-        <hero-element>
-          <flex-wrap-around>
-            ${map(
-              this.items,
-              (item, index) =>
-                html` <explorer-info title=${item.title} .items=${item.items} index=${index}></explorer-info> `
-            )}
-          </flex-wrap-around>
-        </hero-element>
+        ${this.nativeMints
+          ? html` <explorer-dashboard-section
+                .items=${[
+                  {
+                    title: 'Basic Info',
+                    icon: 'analytics',
+                    items: [
+                      {
+                        title: 'blocks',
+                        value: this.lastBlockHeight,
+                        icon: 'content_copy'
+                      },
+                      { title: 'size', value: this.totalSize, icon: 'storage' },
+                      { title: 'transactions', value: this.totalTransactions, icon: 'list' }
+                    ]
+                  },
+                  {
+                    title: 'Validators',
+                    icon: 'construction',
+                    items: [
+                      {
+                        title: 'total',
+                        value: this.totalValidators,
+                        icon: 'check_box_outline_blank'
+                      },
+                      { title: 'online', value: this.onlineValidators, icon: 'check_box' }
+                    ]
+                  },
+                  {
+                    title: 'Contracts',
+                    icon: 'contract',
+                    items: [
+                      {
+                        title: 'total',
+                        value: this.totalContracts,
+                        icon: 'content_copy'
+                      },
+                      { title: 'registered', value: this.registeredContracts, icon: 'storage' }
+                    ]
+                  },
+                  {
+                    title: 'Network',
+                    icon: 'network_check',
+                    items: [
+                      {
+                        title: 'peers',
+                        value: this.peers,
+                        icon: 'groups'
+                      },
+                      { title: 'tps', value: this.tps, icon: 'speed' }
+                    ]
+                  },
+                  {
+                    title: 'Pool',
+                    icon: 'pool',
+                    items: [
+                      { title: 'size', value: this.transactionPoolSize, icon: 'storage' },
+                      {
+                        title: 'transactions',
+                        value: this.transactionsInPool,
+                        icon: 'list'
+                      }
+                    ]
+                  }
+                ]}></explorer-dashboard-section>
+
+              <explorer-dashboard-section
+                .items=${[
+                  {
+                    title: 'Leofcoin',
+                    img: 'https://leofcoin.org/sources/leofcoin.svg',
+                    items: [
+                      { title: 'mints', value: this.nativeMints, icon: 'playing_cards' },
+                      { title: 'burns', value: this.nativeBurns, icon: 'mode_heat' },
+                      { title: 'calls', value: this.nativeCalls, icon: 'published_with_changes' },
+                      {
+                        title: 'transactions',
+                        value: this.nativeTransfers,
+                        icon: 'list'
+                      }
+                    ]
+                  }
+                ]}></explorer-dashboard-section>`
+          : html`<h3>Loading dashboard data...</h3>`}
+        <flex-wrap-around>
+          ${map(
+            this.items,
+            (item, index) =>
+              html` <explorer-info title=${item.title} .items=${item.items} index=${index}></explorer-info> `
+          )}
+        </flex-wrap-around>
       `
     }
   }

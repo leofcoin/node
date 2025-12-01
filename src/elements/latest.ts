@@ -116,6 +116,8 @@ export class LatestElement extends LiteElement {
 
           border-radius: 24px;
           align-items: space-between;
+          background: var(--md-sys-color-inverse-on-surface);
+          color: var(--md-sys-color-on-surface);
         }
 
         flex-row {

@@ -338,6 +338,16 @@ class AppShell extends LiteElement {
           <span name="square">@symbol-square</span>
           <span name="check_box_outline_blank">@symbol-check_box_outline_blank</span>
           <span name="check_box">@symbol-check_box</span>
+          <span name="mode_heat">@symbol-mode_heat</span>
+          <span name="playing_cards">@symbol-playing_cards</span>
+          <span name="published_with_changes">@symbol-published_with_changes</span>
+          <span name="storage">@symbol-storage</span>
+          <span name="speed">@symbol-speed</span>
+          <span name="groups">@symbol-groups</span>
+          <span name="network_check">@symbol-network_check</span>
+          <span name="analytics">@symbol-analytics</span>
+          <span name="construction">@symbol-construction</span>
+          <span name="contract">@symbol-contract</span>
         </template>
       </custom-icon-set>
       <custom-theme load-symbols="false"></custom-theme>
